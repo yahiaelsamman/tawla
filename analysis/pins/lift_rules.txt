@@ -1,0 +1,38 @@
+PIN-LIFTING DECISIONS (2M net, 8,000 self-play games; 1-ply equities)
+
+all decisions                                                          n=133763  lift right   3.1%   avg gain if lifting -0.562
+pinned checker is the opponent's LAST checker outside their home       n=  3195  lift right   0.3%   avg gain if lifting -0.528
+pin on your 2- or 3-point                                              n=  7421  lift right   0.4%   avg gain if lifting -0.919
+the lifting move makes a new pin                                       n= 13651  lift right  10.8%   avg gain if lifting -0.406
+  ... and the old pin is on your 5- or 6-point                         n= 10322  lift right  13.4%   avg gain if lifting -0.319
+  ... and the old pin is on your 2-, 3- or 4-point                     n=  3329  lift right   2.9%   avg gain if lifting -0.674
+no new pin, <=8 of yours outside home, race lead -999..0 pips          n=  4605  lift right   3.3%   avg gain if lifting -0.390
+no new pin, <=8 of yours outside home, race lead 1..15 pips            n=  3703  lift right   4.7%   avg gain if lifting -0.258
+no new pin, <=8 of yours outside home, race lead 16..30 pips           n=  4458  lift right   6.1%   avg gain if lifting -0.205
+no new pin, <=8 of yours outside home, race lead 31..45 pips           n=  4702  lift right   7.9%   avg gain if lifting -0.143
+no new pin, <=8 of yours outside home, race lead 46..60 pips           n=  3369  lift right  12.2%   avg gain if lifting -0.093
+no new pin, <=8 of yours outside home, race lead 61..999 pips          n=  4591  lift right  11.4%   avg gain if lifting -0.077
+no new pin, 9+ of yours still outside home                             n= 91491  lift right   0.8%   avg gain if lifting -0.689
+only one checker on the pin                                            n=106586  lift right   3.1%   avg gain if lifting -0.608
+two or more checkers on the pin                                        n= 27177  lift right   2.9%   avg gain if lifting -0.384
+
+SIMPLE RULES vs the bot:
+Always lift                                             agrees with bot   3.1%   avg loss per decision 0.5659   decisions losing >0.1: 75.50%
+Never lift                                              agrees with bot  96.9%   avg loss per decision 0.0036   decisions losing >0.1: 1.08%
+Rule: swap a 5/6-pin for a new pin, or lead >30 pips late agrees with bot  83.8%   avg loss per decision 0.0382   decisions losing >0.1: 8.21%
+Rule A only: swap a 5/6-pin for a new pin               agrees with bot  91.3%   avg loss per decision 0.0282   decisions losing >0.1: 5.49%
+
+BIG GAINS FROM LIFTING (gain > 0.2): 781 of 133763 decisions (0.58%)
+  lifting move makes a new pin: 65%
+  ... new pin DEEPER (lower point) than the old one: 96%; on 2-4: 90%
+  old pin point distribution: {4: 52, 5: 370, 6: 359}
+  your checkers outside home (median): 14.0
+
+TRADE UP (lift a 5/6-pin to make a new pin on 2-4): n=2143, lift right 41.4%, avg gain -0.046
+   new pin on 2: n=119, lift right 26.9%
+   new pin on 3: n=449, lift right 29.2%
+   new pin on 4: n=1575, lift right 46.0%
+SIDEWAYS/UP (new pin on 5+): n=8179, lift right 6.0%
+EXAMPLE 3000030 22 53 5 -> 2 keep: 24/19 24/21 -0.1304 lift: 24/19 5/2 1.6047 | 0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,3,4,0,0,0,0,4 | 0,0,0,0,0,0,0,0,0,0,0,1,0,2,0,2,0,3,1,0,1,0,0,1,4;32;2048
+EXAMPLE 3001101 17 41 6 -> 2 keep: 22/18 22/21 -0.9388 lift: 6/2 18/17 0.6167 | 0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,2,1,2,0,2,0,6 | 0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,2,1,3,0,3,1,3;64;2112
+EXAMPLE 1001837 7 36 5 -> 2 keep: 22/16 19/16 -0.2824 lift: 24/18 5/2 1.1739 | 0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,0,11 | 0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,3,0,1,9;32;8192

@@ -1,0 +1,21 @@
+HOME-PIN RELEASES by the pinner's checkers still on the board (6000 games)
+checkers_left	voluntary_releases	forced_releases	kept_when_could_release	voluntary_release_rate%
+1	0	8	0	0.0
+2	10	198	164	5.7
+3	40	507	250	13.8
+4	77	413	437	15.0
+5	77	410	588	11.6
+6	78	380	656	10.6
+7	60	351	582	9.3
+8	59	288	658	8.2
+9	47	228	617	7.1
+10	41	205	655	5.9
+11	38	168	520	6.8
+12	34	169	526	6.1
+13	34	129	427	7.4
+14	22	111	463	4.5
+15	2535	2597	94169	2.6
+
+DEEP-PINNED players (own checker pinned on own 19..24 at some point)
+without a pin of their own: 3606 player-games, win 24.9%, double loss 53.6%
+holding a counter-pin: 2134 player-games, win 56.5%, double loss 25.9%

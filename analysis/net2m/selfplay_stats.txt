@@ -1,0 +1,35 @@
+games 20000  double-win rate 42.8%  mother-pin endings 4.4%  avg turns 93.1
+own turn when the start is emptied: median 13 (25%: 11, 75%: 15), emptied in 97.2% of player-games
+
+PINS by point (pinner's numbering; opponent starts on point 1)
+point	pins_per_game	avg_turns_held	pinner_win%	pinner_double%	held_to_end%
+2	0.054	70.5	92.8	83.4	52.9
+3	0.141	64.8	81.3	64.2	25.5
+4	0.395	58.1	69.1	52.3	15.1
+5	0.528	41.9	63.1	45.6	7.5
+6	0.609	34.0	61.8	43.6	5.6
+7	0.702	28.0	63.3	36.5	3.2
+8	0.590	27.4	65.2	38.5	2.6
+9	0.480	26.5	66.6	38.9	2.6
+10	0.435	24.3	67.7	39.0	3.3
+11	0.354	23.0	69.7	42.6	3.0
+12	0.310	20.1	67.8	38.6	3.0
+13	0.378	20.8	65.0	35.9	2.6
+14	0.342	18.8	65.4	35.3	2.6
+15	0.294	17.0	67.1	35.5	2.9
+16	0.230	16.1	65.7	32.8	2.7
+17	0.228	14.7	64.5	30.5	2.4
+18	0.102	13.2	62.2	26.3	2.1
+19	0.073	13.1	64.0	30.4	4.1
+20	0.055	11.6	63.4	31.0	3.1
+21	0.033	10.7	70.9	43.5	3.6
+22	0.026	10.2	73.7	54.9	6.8
+23	0.016	10.7	76.6	62.3	8.8
+
+RISK: blots left after the move, by the mover's own turn number
+turns	avg_max_shots_on_a_blot(/36)	moves_leaving_a_blot_with_6+_shots%
+1-5	2.48	11.1
+6-10	3.44	19.7
+11-15	5.34	26.9
+16-20	6.68	32.1
+21+	2.04	10.6

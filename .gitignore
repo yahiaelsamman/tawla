@@ -1,0 +1,12 @@
+# Third-party pages and papers: kept locally for reference, not redistributed
+research/sources/
+research/text/
+research/papers_text/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# raw pin-lifting decisions (a gzipped copy is committed)
+analysis/pins/lift_decisions.tsv

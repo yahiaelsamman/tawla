@@ -1,0 +1,576 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mahbusa Tawla</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Alegreya+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a carved walnut tawla board with mother-of-pearl points as the hero; a slim
+   brass-ruled side panel (stacks under the board on phones) holds dice, score and the coach.
+   Single deliberate visual world (dark wood), so colours are fixed for both host themes. */
+:root {
+  color-scheme: dark;
+  --ground: #1b120c;      /* ahwa table, behind everything */
+  --walnut: #5b3418;      /* board frame */
+  --walnut-deep: #3a200f; /* frame shadow, bar */
+  --field: #7a4a25;       /* playing field wood */
+  --pearl: #e9e0cc;       /* mother-of-pearl points, ivory checkers */
+  --ebony: #24150d;       /* dark points, ebony checkers */
+  --brass: #c9a25a;       /* accent: rims, highlights, controls */
+  --ink: #efe4cc;         /* text */
+  --muted: #b39f80;       /* secondary text */
+  --good: #8fbf7a; --warn: #e2b04a; --bad: #e07a5f;
+  --display: "Reem Kufi", "Trebuchet MS", sans-serif;
+  --body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px 24px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) 300px; align-items: start; }
+@media (max-width: 900px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.6rem, 3.2vw, 2.3rem); margin: 0; letter-spacing: .02em; color: var(--brass); }
+h1 .ar { font-size: .9em; margin-inline-start: .35em; color: var(--ink); }
+header p { margin: 0; color: var(--muted); font-size: .95rem; }
+.board-box { min-width: 0; }
+svg#board { width: 100%; height: auto; display: block; border-radius: 10px; box-shadow: 0 18px 40px rgba(0,0,0,.55); touch-action: manipulation; }
+.panel { display: grid; gap: 14px; min-width: 0; }
+.card { border-top: 1px solid rgba(201,162,90,.45); padding-top: 12px; display: grid; gap: 8px; }
+.label { font-family: var(--display); font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--brass); }
+.score { display: flex; justify-content: space-between; align-items: baseline; font-variant-numeric: tabular-nums; }
+.score b { font-family: var(--display); font-size: 1.9rem; font-weight: 500; }
+.score .side { display: grid; }
+.score .side small { color: var(--muted); }
+.dice-row { display: flex; align-items: center; gap: 12px; min-height: 58px; }
+.die { width: 52px; height: 52px; border-radius: 10px; background: var(--pearl); box-shadow: inset 0 -3px 0 rgba(0,0,0,.18), 0 4px 10px rgba(0,0,0,.4); display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 7px; }
+.die.used { opacity: .35; }
+.die.bot { background: #2b1a10; box-shadow: inset 0 0 0 2px var(--brass), 0 4px 10px rgba(0,0,0,.4); }
+.pip { width: 9px; height: 9px; border-radius: 50%; background: var(--ebony); place-self: center; visibility: hidden; }
+.die.bot .pip { background: var(--brass); }
+.pip.on { visibility: visible; }
+.call { font-family: var(--display); font-size: 1.25rem; color: var(--brass); }
+#status { min-height: 2.9em; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+button {
+  font: 600 .95rem var(--body); color: var(--ground); background: var(--brass); border: 0; border-radius: 6px; padding: 9px 14px; cursor: pointer;
+}
+button.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px rgba(201,162,90,.6); }
+button:disabled { opacity: .35; cursor: default; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--pearl); outline-offset: 2px; }
+.meter { height: 12px; border-radius: 6px; overflow: hidden; display: flex; background: var(--walnut-deep); }
+.meter span { display: block; height: 100%; }
+.meter .w2 { background: #f3e9d2; } .meter .w1 { background: #b9a37e; } .meter .l1 { background: #6b4a33; } .meter .l2 { background: #3a2415; }
+.meter-legend { display: flex; justify-content: space-between; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.coach { font-size: .95rem; }
+.chip { display: inline-block; font: 700 .78rem var(--body); letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; color: var(--ground); margin-inline-end: 6px; }
+.chip.best, .chip.good { background: var(--good); } .chip.inacc { background: var(--warn); } .chip.mistake, .chip.blunder { background: var(--bad); }
+.mono { font-family: var(--mono); font-size: .9em; }
+ol#log { margin: 0; padding-inline-start: 1.4em; max-height: 190px; overflow-y: auto; font-size: .9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+ol#log li.me { color: var(--ink); }
+.opts { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: .92rem; }
+select { font: inherit; background: var(--walnut-deep); color: var(--ink); border: 1px solid rgba(201,162,90,.5); border-radius: 5px; padding: 3px 6px; }
+details { font-size: .92rem; color: var(--muted); }
+details summary { cursor: pointer; color: var(--ink); }
+details ul { padding-inline-start: 1.1em; margin: 6px 0 0; display: grid; gap: 4px; }
+.banner { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.board-box { position: relative; }
+.banner div { background: rgba(27,18,12,.92); border: 1px solid var(--brass); border-radius: 10px; padding: 16px 22px; text-align: center; pointer-events: auto; max-width: 80%; }
+.banner h2 { font-family: var(--display); color: var(--brass); margin: 0 0 4px; font-size: 1.6rem; }
+.banner p { margin: 0 0 10px; }
+@media (prefers-reduced-motion: no-preference) {
+  .die.roll { animation: tumble .35s ease-out; }
+  @keyframes tumble { from { transform: rotate(-25deg) scale(.8); } to { transform: none; } }
+  .flash { animation: flash 1.6s ease-out; }
+  @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Mahbusa <span class="ar">محبوسة</span></h1>
+    <p>Egyptian pinning tawla against a self-taught bot (2M training games). You play ivory, from 24 down to 1.</p>
+  </header>
+
+  <div class="board-box">
+    <svg id="board" viewBox="0 0 1000 720" role="img" aria-label="Tawla board"></svg>
+    <div class="banner" id="banner" hidden><div><h2 id="bannerTitle"></h2><p id="bannerText"></p><button id="bannerBtn" type="button"></button></div></div>
+  </div>
+
+  <aside class="panel">
+    <div class="card">
+      <div class="score">
+        <div class="side"><small>You · ivory</small><b id="scoreMe">0</b></div>
+        <div class="side" style="text-align:center"><small>first to</small><b id="target" style="font-size:1.2rem">3</b></div>
+        <div class="side" style="text-align:right"><small>Bot · ebony</small><b id="scoreBot">0</b></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="dice-row"><div id="dice" style="display:flex;gap:8px"></div><span class="call" id="call"></span></div>
+      <div id="status">Loading…</div>
+      <div class="btns">
+        <button id="rollBtn" type="button">Roll</button>
+        <button id="playBtn" type="button">Play move</button>
+        <button id="undoBtn" type="button" class="ghost">Undo</button>
+        <button id="hintBtn" type="button" class="ghost">Hint</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Your chances (bot's estimate)</div>
+      <div class="meter" aria-hidden="true"><span class="w2" id="mW2"></span><span class="w1" id="mW1"></span><span class="l1" id="mL1"></span><span class="l2" id="mL2"></span></div>
+      <div class="meter-legend"><span id="lgWin">win –</span><span id="lgMars">mars –</span><span id="lgLoseMars">lose mars –</span></div>
+    </div>
+    <div class="card coach">
+      <div class="label">Coach</div>
+      <div id="coach">After each of your moves the bot rates it and shows its own choice.</div>
+    </div>
+    <div class="card">
+      <div class="label">Moves</div>
+      <ol id="log"></ol>
+    </div>
+    <div class="card">
+      <div class="opts">
+        <label>Match to <select id="matchLen"><option>1</option><option selected>3</option><option>5</option><option>7</option></select></label>
+        <label><input type="checkbox" id="coachOn" checked> Coach</label>
+        <button id="newBtn" type="button" class="ghost">New match</button>
+      </div>
+      <details>
+        <summary>Rules in brief</summary>
+        <ul>
+          <li>All 15 checkers start on your 24-point; you move to 1 and bear off past it. The bot starts on your 1-point and moves the other way.</li>
+          <li>Landing on a lone enemy checker <b>pins</b> it (محبوس) until all your checkers leave that point. A pin or two checkers block a point.</li>
+          <li>Pinning the opponent's last checker on its starting point (the mother) wins at once, double.</li>
+          <li>Bear off only when all 15 are home and none is pinned. A win is 1 point, or 2 (mars) if the loser has borne off nothing.</li>
+          <li>Use both dice if you can; doubles play four times. The winner of a game starts the next one.</li>
+        </ul>
+      </details>
+    </div>
+  </aside>
+</div>
+
+<script src="engine.js"></script>
+<script src="net.js"></script>
+<script>
+(() => {
+"use strict";
+const M = window.Mahbusa;
+const NET = M.loadNet(M.b64ToBytes(window.MAHBUSA_NET_B64));
+const $ = (id) => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const NAMES = ["", "yak", "do", "se", "gahar", "besh", "shesh"];
+const DOUBLES = ["", "hab yak", "dobara", "do se", "dorgy", "dabash", "dosh"];
+const callName = (a, b) => a === b ? DOUBLES[a] : `${NAMES[Math.max(a, b)]} ${NAMES[Math.min(a, b)]}`;
+
+// ---------------------------------------------------------------- state
+// pos is always from the human's point of view (me = human, ivory).
+let G = null;
+function freshGame(starter, score, target) {
+  return { pos: M.initial(), turn: starter, dice: null, paths: [], partial: [], selected: null,
+           score: score || [0, 0], target: target || 3, over: false, log: [], lastBot: null, hint: null, coach: null };
+}
+const rnd = () => 1 + Math.floor(Math.random() * 6);
+
+// ---------------------------------------------------------------- board geometry
+const W = 62, R = 27, X0 = 36, BAR = 44, Y_TOP = 40, Y_BOT = 680, STACK_H = 292;
+const TRAY_X = 36 + 12 * W + BAR + 22, TRAY_W = 104;
+function colX(i) { const half = i < 6 ? 0 : 1; return X0 + half * (6 * W + BAR) + (i % 6) * W + W / 2; }
+function pointGeom(p) { return p >= 13 ? { cx: colX(p - 13), top: true } : { cx: colX(12 - p), top: false }; }
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const svg = $("board");
+function drawStatic() {
+  svg.innerHTML = "";
+  const defs = el("defs", {}, svg);
+  const wood = el("linearGradient", { id: "wood", x1: 0, y1: 0, x2: 1, y2: 1 }, defs);
+  el("stop", { offset: 0, "stop-color": "#6b3e1e" }, wood); el("stop", { offset: 1, "stop-color": "#4a2a13" }, wood);
+  const field = el("linearGradient", { id: "field", x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+  el("stop", { offset: 0, "stop-color": "#83522b" }, field); el("stop", { offset: .5, "stop-color": "#734523" }, field); el("stop", { offset: 1, "stop-color": "#83522b" }, field);
+  const ivory = el("radialGradient", { id: "ivory", cx: .38, cy: .35, r: .75 }, defs);
+  el("stop", { offset: 0, "stop-color": "#fbf5e6" }, ivory); el("stop", { offset: 1, "stop-color": "#cdbb93" }, ivory);
+  const ebony = el("radialGradient", { id: "ebony", cx: .38, cy: .35, r: .75 }, defs);
+  el("stop", { offset: 0, "stop-color": "#4a2d1c" }, ebony); el("stop", { offset: 1, "stop-color": "#140b06" }, ebony);
+  const pearl = el("linearGradient", { id: "pearl", x1: 0, y1: 0, x2: 1, y2: 0 }, defs);
+  el("stop", { offset: 0, "stop-color": "#e6dcc6" }, pearl); el("stop", { offset: .5, "stop-color": "#f6f0e2" }, pearl); el("stop", { offset: 1, "stop-color": "#d9ccb1" }, pearl);
+
+  el("rect", { x: 0, y: 0, width: 1000, height: 720, rx: 14, fill: "url(#wood)" }, svg);
+  // inlay border: a thin pearl line with a brass hairline
+  el("rect", { x: 10, y: 10, width: 980, height: 700, rx: 10, fill: "none", stroke: "#c9a25a", "stroke-width": 1.5, opacity: .7 }, svg);
+  for (const half of [0, 1]) {
+    const x = X0 + half * (6 * W + BAR);
+    el("rect", { x, y: Y_TOP - 10, width: 6 * W, height: Y_BOT - Y_TOP + 20, fill: "url(#field)" }, svg);
+  }
+  el("rect", { x: X0 + 6 * W, y: Y_TOP - 10, width: BAR, height: Y_BOT - Y_TOP + 20, fill: "#3a200f" }, svg);
+  // inlaid diamond on the bar
+  const bx = X0 + 6 * W + BAR / 2, by = 360;
+  el("path", { d: `M${bx} ${by - 26} L${bx + 12} ${by} L${bx} ${by + 26} L${bx - 12} ${by} Z`, fill: "url(#pearl)", opacity: .85 }, svg);
+  // tray
+  el("rect", { x: TRAY_X, y: Y_TOP - 10, width: TRAY_W, height: Y_BOT - Y_TOP + 20, rx: 6, fill: "#3a200f" }, svg);
+  el("line", { x1: TRAY_X + 8, x2: TRAY_X + TRAY_W - 8, y1: 360, y2: 360, stroke: "#c9a25a", opacity: .5 }, svg);
+  // points
+  for (let p = 1; p <= 24; p++) {
+    const { cx, top } = pointGeom(p);
+    const baseY = top ? Y_TOP - 10 : Y_BOT + 10, tipY = top ? Y_TOP + 270 : Y_BOT - 270;
+    const dark = p % 2 === 0;
+    el("path", { d: `M${cx - W / 2 + 2} ${baseY} L${cx + W / 2 - 2} ${baseY} L${cx} ${tipY} Z`,
+                 fill: dark ? "#2a170c" : "url(#pearl)", opacity: dark ? .92 : .95 }, svg);
+    const t = el("text", { x: cx, y: top ? 22 : 708, "text-anchor": "middle", "font-family": "IBM Plex Mono, monospace",
+                           "font-size": 15, fill: "#d9c39a", opacity: .85 }, svg);
+    t.textContent = p;
+  }
+  // click targets (above everything drawn later via layer ordering)
+  dyn = el("g", {}, svg);
+  hits = el("g", {}, svg);
+  for (let p = 1; p <= 24; p++) {
+    const { cx, top } = pointGeom(p);
+    const r = el("rect", { x: cx - W / 2, y: top ? Y_TOP - 10 : 360, width: W, height: 320, fill: "transparent", style: "cursor:pointer" }, hits);
+    r.addEventListener("click", () => onPoint(p));
+  }
+  const tray = el("rect", { x: TRAY_X, y: 360, width: TRAY_W, height: 330, fill: "transparent", style: "cursor:pointer" }, hits);
+  tray.addEventListener("click", () => onPoint(0));
+}
+let dyn, hits;
+
+function checker(cx, cy, kind, parent, extra = {}) {
+  const g = el("g", {}, parent);
+  el("circle", Object.assign({ cx, cy, r: R, fill: kind === "me" ? "url(#ivory)" : "url(#ebony)",
+    stroke: kind === "me" ? "#9a8155" : "#c9a25a", "stroke-width": kind === "me" ? 1.5 : 2 }, extra), g);
+  el("circle", { cx, cy, r: R - 8, fill: "none", stroke: kind === "me" ? "#b8a47c" : "#6b4a2e", "stroke-width": 1.2 }, g);
+  return g;
+}
+
+function stackYs(n, top) {
+  const step = n <= 5 ? 2 * R : Math.min(2 * R, (STACK_H - 2 * R) / (n - 1));
+  const ys = [];
+  for (let i = 0; i < n; i++) ys.push(top ? Y_TOP + R + i * step : Y_BOT - R - i * step);
+  return ys;
+}
+
+function render() {
+  dyn.innerHTML = "";
+  const s = G.pos;
+  const srcs = new Set(), dests = new Map();
+  if (G.turn === 0 && G.dice && !G.over) {
+    for (const st of nextSteps()) srcs.add(st[0]);
+    if (G.selected != null) for (const st of nextSteps()) if (st[0] === G.selected) dests.set(st[1], st);
+  }
+  for (let p = 1; p <= 24; p++) {
+    const { cx, top } = pointGeom(p);
+    const mine = s.me[p], theirs = s.op[25 - p];
+    const seq = [];
+    if (M.myPinnedAt(s, p)) { seq.push("me-pinned"); for (let i = 0; i < theirs; i++) seq.push("op"); }
+    else if (M.iPinAt(s, p)) { seq.push("op-pinned"); for (let i = 0; i < mine; i++) seq.push("me"); }
+    else { for (let i = 0; i < mine; i++) seq.push("me"); for (let i = 0; i < theirs; i++) seq.push("op"); }
+    const ys = stackYs(seq.length, top);
+    seq.forEach((k, i) => {
+      const kind = k.startsWith("me") ? "me" : "op";
+      const g = checker(cx, ys[i], kind, dyn);
+      if (k.endsWith("pinned")) {
+        el("circle", { cx, cy: ys[i], r: R + 3, fill: "none", stroke: "#e07a5f", "stroke-width": 2.5, "stroke-dasharray": "5 4" }, g);
+      }
+    });
+    if (seq.length > 5) {
+      const t = el("text", { x: cx, y: ys[seq.length - 1] + 5, "text-anchor": "middle", "font-family": "IBM Plex Mono, monospace", "font-size": 16, "font-weight": 600,
+                             fill: seq[seq.length - 1] === "op" ? "#e9d6ad" : "#3a2415" }, dyn);
+      t.textContent = seq.length;
+    }
+    if (srcs.has(p)) {
+      const y = top ? Y_TOP + R + Math.min(seq.length - 1, 4) * 2 * R : Y_BOT - R - Math.min(seq.length - 1, 4) * 2 * R;
+      const lastY = ys[ys.length - 1];
+      el("circle", { cx, cy: lastY ?? y, r: R + 4, fill: "none", stroke: G.selected === p ? "#f6f0e2" : "#c9a25a",
+                     "stroke-width": G.selected === p ? 4 : 2.5 }, dyn);
+    }
+    if (dests.has(p)) {
+      const ty = top ? Y_TOP + R + Math.min(seq.length, 5) * 2 * R : Y_BOT - R - Math.min(seq.length, 5) * 2 * R;
+      el("circle", { cx, cy: Math.max(Y_TOP + R, Math.min(Y_BOT - R, ty)), r: R - 4, fill: "#c9a25a", opacity: .55, "pointer-events": "none" }, dyn);
+    }
+    if (G.lastBot && (G.lastBot.from.has(p) || G.lastBot.to.has(p))) {
+      const baseY = top ? Y_TOP - 10 : Y_BOT + 10;
+      el("rect", { x: cx - W / 2 + 4, y: top ? baseY : baseY - 6, width: W - 8, height: 6, rx: 3,
+                   fill: G.lastBot.to.has(p) ? "#c9a25a" : "#8a6a3a" }, dyn);
+    }
+  }
+  // borne-off trays: bot (top), you (bottom)
+  for (const [n, top, kind] of [[s.op[0], true, "op"], [s.me[0], false, "me"]]) {
+    for (let i = 0; i < n; i++) {
+      const y = top ? Y_TOP + 4 + i * 18 : Y_BOT - 16 - i * 18;
+      el("rect", { x: TRAY_X + 14, y, width: TRAY_W - 28, height: 13, rx: 4, fill: kind === "me" ? "url(#ivory)" : "url(#ebony)",
+                   stroke: kind === "me" ? "#9a8155" : "#c9a25a" }, dyn);
+    }
+  }
+  if (dests.has(0)) el("rect", { x: TRAY_X + 4, y: 366, width: TRAY_W - 8, height: 318, rx: 6, fill: "#c9a25a", opacity: .25, "pointer-events": "none" }, dyn);
+  renderPanel();
+}
+
+// ---------------------------------------------------------------- panel
+function dieEl(v, bot, used) {
+  const d = document.createElement("div");
+  d.className = "die roll" + (bot ? " bot" : "") + (used ? " used" : "");
+  const on = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] }[v];
+  for (let i = 0; i < 9; i++) { const p = document.createElement("span"); p.className = "pip" + (on.includes(i) ? " on" : ""); d.appendChild(p); }
+  d.setAttribute("aria-label", `die showing ${v}`);
+  return d;
+}
+function renderPanel() {
+  $("scoreMe").textContent = G.score[0];
+  $("scoreBot").textContent = G.score[1];
+  $("target").textContent = G.target;
+  const dice = $("dice");
+  dice.innerHTML = "";
+  if (G.dice) {
+    const [a, b] = G.dice;
+    const usedDice = G.partial.map((s) => s[2]);
+    const list = a === b ? [a, a, a, a] : [a, b];
+    const remaining = usedDice.slice();
+    for (const v of list) {
+      const i = remaining.indexOf(v);
+      const used = G.turn === 0 && i >= 0;
+      if (used) remaining.splice(i, 1);
+      dice.appendChild(dieEl(v, G.turn === 1, used));
+    }
+    $("call").textContent = callName(a, b) + (a === b ? "!" : "");
+  } else $("call").textContent = "";
+  const myTurn = G.turn === 0 && !G.over;
+  $("rollBtn").disabled = !(myTurn && !G.dice);
+  $("playBtn").disabled = !(myTurn && G.dice && completePath());
+  $("undoBtn").disabled = !(myTurn && G.partial.length);
+  $("hintBtn").disabled = !(myTurn && G.dice && G.paths.length);
+  // meter: human's chances
+  let o = G.turn === 0 ? M.evaluate(NET, G.pos) : (() => { const b = M.evaluate(NET, M.flip(G.pos)); return [1 - b[0], b[2], b[1]]; })();
+  if (G.over) o = G.winner === 0 ? [1, G.lastPoints === 2 ? 1 : 0, 0] : [0, 0, G.lastPoints === 2 ? 1 : 0];
+  const [w, wd, ld] = o;
+  const pct = (x) => `${Math.round(100 * x)}%`;
+  $("mW2").style.width = pct(wd); $("mW1").style.width = pct(Math.max(0, w - wd));
+  $("mL1").style.width = pct(Math.max(0, 1 - w - ld)); $("mL2").style.width = pct(ld);
+  $("lgWin").textContent = `win ${pct(w)}`; $("lgMars").textContent = `mars ${pct(wd)}`; $("lgLoseMars").textContent = `lose mars ${pct(ld)}`;
+  // coach
+  const c = $("coach");
+  if (G.hint) c.innerHTML = `Hint: the bot would play <span class="mono">${G.hint}</span>.`;
+  else if (!$("coachOn").checked) c.textContent = "Coach is off.";
+  else if (G.coach) c.innerHTML = G.coach;
+  const log = $("log");
+  log.innerHTML = G.log.map((l) => `<li class="${l.me ? "me" : ""}">${l.text}</li>`).join("");
+  log.scrollTop = log.scrollHeight;
+}
+function setStatus(t) { $("status").textContent = t; }
+
+// ---------------------------------------------------------------- human move input
+function matchingPaths() {
+  const n = G.partial.length;
+  return G.paths.filter((p) => G.partial.every((st, i) => p.steps[i] && p.steps[i][0] === st[0] && p.steps[i][1] === st[1] && p.steps[i][2] === st[2]));
+}
+function nextSteps() {
+  const n = G.partial.length, out = [], seen = new Set();
+  for (const p of matchingPaths()) {
+    if (p.steps.length > n) {
+      const st = p.steps[n], k = st.join(",");
+      if (!seen.has(k)) { seen.add(k); out.push(st); }
+    }
+  }
+  return out;
+}
+function completePath() {
+  return matchingPaths().find((p) => p.steps.length === G.partial.length) || null;
+}
+function currentPos() {
+  let s = G.pos;
+  for (const [a, , d] of G.partial) s = M.step(s, a, d).state;
+  return s;
+}
+
+function onPoint(p) {
+  if (G.turn !== 0 || !G.dice || G.over) return;
+  G.hint = null;
+  const steps = nextSteps();
+  if (G.selected != null) {
+    const options = steps.filter((st) => st[0] === G.selected && st[1] === p);
+    if (options.length) {
+      options.sort((x, y) => x[2] - y[2]);
+      applyStep(options[0]);
+      return;
+    }
+  }
+  if (steps.some((st) => st[0] === p)) { G.selected = G.selected === p ? null : p; render(); return; }
+  G.selected = null; render();
+}
+function applyStep(st) {
+  G.partial.push(st);
+  const complete = completePath();
+  const more = nextSteps();
+  G.selected = null;
+  if (more.length) {
+    const srcs = new Set(more.map((m) => m[0]));
+    if (srcs.size === 1) G.selected = [...srcs][0];
+    else if (st[1] !== 0 && srcs.has(st[1])) G.selected = st[1];
+  }
+  if (complete && complete.outcome) { confirmMove(); return; } // a winning move ends the game at once
+  if (complete && !more.length) setStatus("Move complete. Press Play move (or Enter), or Undo.");
+  else if (complete) setStatus("You can stop here or keep moving.");
+  else setStatus("Keep going: play the remaining dice.");
+  render();
+}
+
+function humanRoll() {
+  if (G.turn !== 0 || G.dice || G.over) return;
+  G.dice = [rnd(), rnd()];
+  G.paths = M.legalPaths(G.pos, G.dice[0], G.dice[1]);
+  G.partial = []; G.selected = null; G.hint = null;
+  if (!G.paths.length) {
+    G.log.push({ me: true, text: `You ${G.dice.join("-")}: no legal move` });
+    setStatus("No legal move: you pass.");
+    render();
+    setTimeout(() => { G.dice = null; G.turn = 1; botTurn(); }, 1200);
+    return;
+  }
+  const srcs = new Set(G.paths.map((p) => p.steps[0][0]));
+  if (srcs.size === 1) G.selected = [...srcs][0];
+  setStatus("Click a checker, then a highlighted point. Bear off by clicking the tray.");
+  render();
+}
+
+function confirmMove() {
+  const path = completePath();
+  if (!path) return;
+  const before = G.pos, dice = G.dice;
+  const ranked = M.rankMoves(NET, M.legalMoves(before, dice[0], dice[1]));
+  const key = M.keyOf(path.after);
+  const mine = ranked.find((r) => M.keyOf(r.move.after) === key) || ranked[0];
+  const best = ranked[0];
+  const loss = Math.max(0, best.value - mine.value);
+  const note = M.notation(path.steps);
+  const [cls, word] = loss <= 0.015 ? ["best", "Best move"] : loss <= 0.06 ? ["good", "Good"] : loss <= 0.15 ? ["inacc", "Inaccuracy"] : loss <= 0.4 ? ["mistake", "Mistake"] : ["blunder", "Blunder"];
+  G.coach = loss <= 0.015
+    ? `<span class="chip ${cls}">${word}</span>You played <span class="mono">${note}</span>, the bot's choice too.`
+    : `<span class="chip ${cls}">${word}</span>You played <span class="mono">${note}</span>. The bot prefers <span class="mono">${M.notation(best.move.steps)}</span>, worth ${loss.toFixed(2)} more points on average.`;
+  G.log.push({ me: true, text: `You ${dice.join("-")}: ${note}` });
+  G.pos = path.after;
+  G.dice = null; G.paths = []; G.partial = []; G.selected = null; G.hint = null;
+  if (path.outcome) return endGame(0, path.outcome, path.after.me[0] < 15 ? "mother" : "bearoff");
+  G.turn = 1;
+  render();
+  botTurn();
+}
+
+// ---------------------------------------------------------------- bot
+const toMine = (steps) => steps.map(([a, b]) => [25 - a, b === 0 ? 0 : 25 - b]);
+function botTurn() {
+  setStatus("Bot is thinking…");
+  render();
+  setTimeout(() => {
+    if (G.over || G.turn !== 1) return;
+    const d = [rnd(), rnd()];
+    G.dice = d;
+    const view = M.flip(G.pos);
+    const moves = M.legalMoves(view, d[0], d[1]);
+    if (!moves.length) {
+      G.log.push({ me: false, text: `Bot ${d.join("-")}: no legal move` });
+      G.lastBot = null;
+      G.turn = 0; G.dice = null;
+      setStatus(`Bot rolled ${callName(d[0], d[1])} and cannot move. Your roll.`);
+      render(); showBotDice(d);
+      return;
+    }
+    const best = M.rankMoves(NET, moves)[0].move;
+    const mine = toMine(best.steps);
+    G.lastBot = { from: new Set(mine.map((s) => s[0])), to: new Set(mine.map((s) => s[1]).filter((x) => x)) };
+    const txt = mine.map(([a, b]) => `${a}/${b === 0 ? "off" : b}`).join(" ");
+    G.log.push({ me: false, text: `Bot ${d.join("-")}: ${txt}` });
+    G.pos = M.flip(best.after);
+    if (best.outcome) return endGame(1, best.outcome, best.after.me[0] < 15 ? "mother" : "bearoff");
+    G.turn = 0;
+    setStatus(`Bot rolled ${callName(d[0], d[1])} and played ${txt} (your point numbers). Your roll.`);
+    G.dice = null;
+    render(); showBotDice(d);
+  }, 700);
+}
+function showBotDice(d) {
+  const dice = $("dice"); dice.innerHTML = "";
+  dice.appendChild(dieEl(d[0], true)); dice.appendChild(dieEl(d[1], true));
+  $("call").textContent = callName(d[0], d[1]) + (d[0] === d[1] ? "!" : "");
+}
+
+// ---------------------------------------------------------------- games and matches
+function endGame(winner, points, reason) {
+  G.over = true; G.winner = winner; G.lastPoints = points;
+  G.score[winner] += points;
+  const who = winner === 0 ? "You win" : "The bot wins";
+  const how = reason === "mother" ? "by pinning the mother (مسك الحجر)" : points === 2 ? "a mars" : "the game";
+  G.log.push({ me: winner === 0, text: `${who} ${points} point${points > 1 ? "s" : ""}${reason === "mother" ? " (mother)" : points === 2 ? " (mars)" : ""}` });
+  const matchOver = G.score[winner] >= G.target;
+  render();
+  showBanner(matchOver ? (winner === 0 ? "Match won" : "Match lost") : `${who}`,
+             `${winner === 0 ? "You" : "The bot"} took ${how}: ${points} point${points > 1 ? "s" : ""}. Score ${G.score[0]} – ${G.score[1]}.`,
+             matchOver ? "New match" : "Next game",
+             () => matchOver ? newMatch() : nextGame(winner));
+}
+function showBanner(title, text, btn, fn) {
+  $("bannerTitle").textContent = title; $("bannerText").textContent = text; $("bannerBtn").textContent = btn;
+  $("bannerBtn").onclick = () => { $("banner").hidden = true; fn(); };
+  $("banner").hidden = false;
+}
+function nextGame(starter) {
+  const sc = G.score, t = G.target, log = G.log;
+  G = freshGame(starter, sc, t);
+  G.log = log.concat([{ me: false, text: "— new game —" }]);
+  startTurn();
+}
+function newMatch() {
+  const target = +$("matchLen").value;
+  G = freshGame(0, [0, 0], target);
+  let a, b;
+  do { a = rnd(); b = rnd(); } while (a === b);
+  G.turn = a > b ? 0 : 1;
+  G.log.push({ me: false, text: `Opening roll: you ${a}, bot ${b}` });
+  $("banner").hidden = true;
+  setStatus(`Opening roll: you ${a}, bot ${b}. ${G.turn === 0 ? "You start." : "The bot starts."}`);
+  startTurn(true);
+}
+function startTurn(keepStatus) {
+  render();
+  if (G.turn === 1) botTurn();
+  else if (!keepStatus) setStatus("Your roll.");
+}
+
+// ---------------------------------------------------------------- wiring
+$("rollBtn").onclick = humanRoll;
+$("playBtn").onclick = confirmMove;
+$("undoBtn").onclick = () => { G.partial = []; G.selected = null; setStatus("Move undone. Click a checker."); render(); };
+$("hintBtn").onclick = () => {
+  const ranked = M.rankMoves(NET, M.legalMoves(G.pos, G.dice[0], G.dice[1]));
+  G.hint = M.notation(ranked[0].move.steps);
+  render();
+};
+$("newBtn").onclick = newMatch;
+$("coachOn").onchange = renderPanel;
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "SELECT" || e.target.tagName === "INPUT") return;
+  if (e.key === " " || e.key === "r") { if (!$("rollBtn").disabled) { e.preventDefault(); humanRoll(); } }
+  if (e.key === "Enter" && !$("playBtn").disabled) confirmMove();
+  if ((e.key === "Backspace" || e.key === "u") && !$("undoBtn").disabled) { e.preventDefault(); $("undoBtn").click(); }
+});
+
+// render() shows the position after any partial move
+const baseRender = render;
+render = function () {
+  if (G.partial.length) { const s = G.pos; G.pos = currentPos(); try { baseRender(); } finally { G.pos = s; } }
+  else baseRender();
+};
+
+// test hook (used by web/tests/play_test.js)
+window.__mahbusa = { get G() { return G; }, onPoint, confirmMove, humanRoll };
+
+drawStatic();
+function start(data) {
+  if (data && data.G) { G = data.G; G.paths = G.dice && G.turn === 0 ? M.legalPaths(G.pos, G.dice[0], G.dice[1]) : []; render(); setStatus("Game restored."); if (G.turn === 1 && !G.over) botTurn(); }
+  else newMatch();
+}
+start({});
+})();
+</script>
