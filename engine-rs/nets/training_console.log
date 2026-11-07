@@ -113,3 +113,61 @@ ALL DONE
 training: start at 2000037 games, +100000 games, alpha 0.01, hidden 100, threads 4
   2025073 games    99.1 games/s  vs heuristic: 1000 games  net vs heuristic: win 83.3% ±2.3  ppg +1.085  doubles 45.6%/3.7%  mother-pin 5.9%  avg turns 90.9
   2050073 games    98.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.4% ±2.4  ppg +1.076  doubles 48.2%/3.4%  mother-pin 6.3%  avg turns 90.8
+training: start at 2050073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2075091 games   101.0 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.7% ±2.4  ppg +1.052  doubles 45.9%/4.1%  mother-pin 6.6%  avg turns 90.5
+  2100073 games   100.9 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.9% ±2.4  ppg +1.088  doubles 47.4%/2.4%  mother-pin 6.0%  avg turns 91.3
+  2125097 games   100.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.2% ±2.5  ppg +1.007  doubles 44.5%/4.2%  mother-pin 5.1%  avg turns 91.6
+  2150073 games   100.4 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.5% ±2.4  ppg +1.069  doubles 47.1%/3.2%  mother-pin 5.5%  avg turns 91.3
+done in 1015s
+training: start at 2150073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2175082 games   102.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.6% ±2.4  ppg +1.072  doubles 47.0%/3.0%  mother-pin 5.4%  avg turns 91.4
+  2200090 games   102.0 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.8% ±2.4  ppg +1.060  doubles 45.7%/3.3%  mother-pin 4.8%  avg turns 91.4
+  2225081 games   101.4 games/s  vs heuristic: 1000 games  net vs heuristic: win 83.0% ±2.3  ppg +1.117  doubles 48.6%/2.9%  mother-pin 5.1%  avg turns 91.4
+  2250073 games   100.9 games/s  vs heuristic: 1000 games  net vs heuristic: win 83.0% ±2.3  ppg +1.055  doubles 43.4%/3.9%  mother-pin 6.3%  avg turns 91.1
+done in 1010s
+training: start at 2250073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2275088 games   101.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.6% ±2.5  ppg +1.041  doubles 46.6%/3.7%  mother-pin 6.5%  avg turns 91.1
+  2300100 games   100.8 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.9% ±2.4  ppg +1.045  doubles 44.5%/3.8%  mother-pin 4.8%  avg turns 91.6
+  2325083 games   100.5 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.5% ±2.5  ppg +1.038  doubles 47.3%/4.5%  mother-pin 6.5%  avg turns 90.8
+  2350073 games   100.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 79.2% ±2.5  ppg +1.017  doubles 47.2%/3.9%  mother-pin 6.4%  avg turns 91.0
+done in 1013s
+training: start at 2350073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2375119 games   100.7 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.7% ±2.4  ppg +1.038  doubles 46.6%/4.2%  mother-pin 5.6%  avg turns 91.2
+  2400114 games   100.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.5% ±2.4  ppg +1.072  doubles 47.4%/3.2%  mother-pin 5.7%  avg turns 91.0
+  2425111 games   100.5 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.9% ±2.4  ppg +1.059  doubles 45.3%/3.2%  mother-pin 4.4%  avg turns 92.1
+  2450073 games   100.5 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.7% ±2.4  ppg +1.082  doubles 47.5%/2.7%  mother-pin 5.7%  avg turns 91.2
+done in 1013s
+training: start at 2450073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2475097 games   103.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.3% ±2.4  ppg +1.061  doubles 46.3%/2.8%  mother-pin 6.7%  avg turns 91.1
+  2500089 games   103.3 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.7% ±2.4  ppg +1.040  doubles 46.8%/4.2%  mother-pin 4.7%  avg turns 91.4
+  2525103 games    97.8 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.4% ±2.5  ppg +1.040  doubles 45.5%/2.3%  mother-pin 5.6%  avg turns 91.6
+  2550073 games    98.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.8% ±2.4  ppg +1.053  doubles 46.5%/2.8%  mother-pin 6.1%  avg turns 91.2
+done in 1032s
+training: start at 2550073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2575117 games   104.3 games/s  vs heuristic: 1000 games  net vs heuristic: win 82.3% ±2.4  ppg +1.112  doubles 49.4%/2.8%  mother-pin 5.2%  avg turns 91.5
+  2600099 games   104.0 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.8% ±2.4  ppg +1.082  doubles 47.7%/3.1%  mother-pin 7.3%  avg turns 90.3
+  2625089 games   103.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.7% ±2.4  ppg +1.061  doubles 46.4%/3.7%  mother-pin 6.4%  avg turns 91.1
+  2650073 games   103.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.6% ±2.4  ppg +1.015  doubles 42.2%/3.9%  mother-pin 5.4%  avg turns 91.3
+done in 983s
+training: start at 2650073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2675103 games   104.0 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.5% ±2.4  ppg +1.029  doubles 44.3%/4.4%  mother-pin 5.5%  avg turns 91.5
+  2700091 games   103.7 games/s  vs heuristic: 1000 games  net vs heuristic: win 83.1% ±2.3  ppg +1.113  doubles 48.4%/3.3%  mother-pin 5.4%  avg turns 91.8
+  2725083 games   103.5 games/s  vs heuristic: 1000 games  net vs heuristic: win 82.3% ±2.4  ppg +1.069  doubles 45.3%/3.0%  mother-pin 5.7%  avg turns 91.5
+  2750073 games   103.5 games/s  vs heuristic: 1000 games  net vs heuristic: win 82.7% ±2.3  ppg +1.075  doubles 45.9%/3.8%  mother-pin 6.3%  avg turns 91.3
+done in 983s
+training: start at 2750073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2775083 games   105.9 games/s  vs heuristic: 1000 games  net vs heuristic: win 82.1% ±2.4  ppg +1.040  doubles 44.4%/4.6%  mother-pin 5.7%  avg turns 91.0
+  2800117 games   105.2 games/s  vs heuristic: 1000 games  net vs heuristic: win 82.9% ±2.3  ppg +1.102  doubles 47.6%/3.2%  mother-pin 4.6%  avg turns 91.7
+  2825082 games   104.7 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.4% ±2.4  ppg +1.041  doubles 45.0%/3.7%  mother-pin 6.2%  avg turns 91.3
+  2850073 games   104.4 games/s  vs heuristic: 1000 games  net vs heuristic: win 83.2% ±2.3  ppg +1.105  doubles 47.7%/3.6%  mother-pin 5.0%  avg turns 91.3
+done in 976s
+training: start at 2850073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2875121 games   104.7 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.0% ±2.5  ppg +1.017  doubles 45.8%/4.1%  mother-pin 5.8%  avg turns 91.2
+  2900095 games   104.6 games/s  vs heuristic: 1000 games  net vs heuristic: win 80.8% ±2.4  ppg +1.022  doubles 44.0%/3.4%  mother-pin 6.7%  avg turns 90.9
+  2925117 games   104.3 games/s  vs heuristic: 1000 games  net vs heuristic: win 82.1% ±2.4  ppg +1.079  doubles 46.9%/3.2%  mother-pin 4.7%  avg turns 91.9
+  2950073 games   104.2 games/s  vs heuristic: 1000 games  net vs heuristic: win 82.6% ±2.3  ppg +1.094  doubles 47.4%/3.2%  mother-pin 6.0%  avg turns 91.3
+done in 977s
+training: start at 2950073 games, +100000 games, alpha 0.01, hidden 100, threads 4
+  2975121 games   106.3 games/s  vs heuristic: 1000 games  net vs heuristic: win 82.3% ±2.4  ppg +1.082  doubles 48.3%/4.7%  mother-pin 5.4%  avg turns 91.2
+  3000073 games   104.7 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.2% ±2.4  ppg +1.038  doubles 45.3%/3.9%  mother-pin 4.4%  avg turns 92.1
+  3025075 games    93.9 games/s  vs heuristic: 1000 games  net vs heuristic: win 81.8% ±2.4  ppg +1.065  doubles 46.7%/3.8%  mother-pin 6.4%  avg turns 91.1
