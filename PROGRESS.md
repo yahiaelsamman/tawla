@@ -59,3 +59,12 @@ Plan:
   never lift (97% agreement); the exception is trading a 5/6 pin for a deeper 2–4 pin (41% right); verified example in tradeup_verified.txt.
 - More examples: `quiz` with the 2M net (700 games, 4,983 candidates) and `scripts/categorize_quiz.py` (themes). Added guide §11 Mistake 5 (counter-pin when pinned)
   and Mistake 6 (burying checkers on 1–2), both rollout-verified (analysis/net2m/examples2_verified.txt). The guide is now v2.1.
+
+## Session 3 (6–7 Nov): repo + more training
+- Project moved into the GitHub repo yahiaelsamman/tawla (this repo); git identity is set per repo.
+- Training continued from 2.05M to 3M games (alpha 0.01). Results:
+  - 2.5M vs 2M: +0.026 ppg (6k games, 50.9%), not significant.
+  - **3M vs 2M: +0.006 ppg (20k games, 50.1% ±0.7)**, no improvement. Against the heuristic: +1.077 ppg (82.1%).
+  - Conclusion: this network (253 inputs, 100 hidden units, 1-ply) has plateaued. More of the same self-play doesn't help.
+    td-best.net stays the 2M net (the guide's numbers come from it). The 3M checkpoint is kept locally (nets/td-3000k.net, not committed).
+- Ideas for a stronger bot: 2-ply look-ahead (Palamedes measured about +0.07 ppg), a bigger hidden layer, more expert features (escape/prime), pin-endgame databases.
