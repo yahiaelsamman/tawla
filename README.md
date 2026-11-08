@@ -97,6 +97,10 @@ Play against the trained net from Python:
 
 Results so far are in `analysis/`. After 2M training games the net beats the heuristic bot 81.5% of the time (+1.06 points per game), and its opening playouts match the Palamedes book on 19 of 21 rolls.
 
+`engine-rs/nets/td.log` has one line per checkpoint with a 1,000-game benchmark against the heuristic, so you can see the learning curve.
+
+I kept training up to 3M games (alpha 0.01), but the 3M net is no better than the 2M one (+0.006 points per game over 20,000 games, 50.1% ±0.7). This network (253 inputs, 100 hidden units, 1-ply) has plateaued, so `td-best.net` stays the 2M net. Things that should help next: a 2-ply look-ahead, a bigger hidden layer, and more expert features (primes, escapes).
+
 ## Plan
 
 1. ✅ Rules spec (`research/RESEARCH.md`)

@@ -10,3 +10,9 @@ __pycache__/
 
 # raw pin-lifting decisions (a gzipped copy is committed)
 analysis/pins/lift_decisions.tsv
+
+# run output
+console.log
+training_console.log
+DONE
+*.done
