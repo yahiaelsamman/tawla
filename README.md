@@ -106,4 +106,5 @@ Results so far are in `analysis/`. After 2M training games the net beats the heu
 5. ✅ Strategy guide v2 (`guide/STRATEGY_GUIDE.md`), with the bot's opening, reply, pin-value and risk results
 6. ✅ Web board (`web/`): play the bot in any browser
 7. ✅ Pin-lifting rules (guide §7, data in `analysis/pins/`)
-8. ⏭ More worked example positions (guide §11)
+8. ✅ More worked example positions (guide §11)
+9. ✅ Experiments (guide §12, `analysis/experiments/`): rules of thumb tested as strict policies, lone-mother cost, pin standoffs, stacking on pins, skill vs luck, mother-rule frequency

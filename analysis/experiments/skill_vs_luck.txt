@@ -1,0 +1,7 @@
+SKILL vs LUCK: chance that the stronger side wins a set (first to N points)
+measured per-game rates -> exact set probabilities (games independent)
+
+matchup                                 1 game   to 3   to 5   to 7  to 11  to 21
+bot (2M) vs rule-based bot              81.5%  94.9%  98.4%  99.5%  99.9% 100.0%
+bot (1M) vs early bot (50k games)       59.7%  66.3%  70.8%  74.3%  79.4%  87.3%
+bot (2M) vs bot (1M)                    52.2%  53.3%  54.2%  55.0%  56.3%  58.6%

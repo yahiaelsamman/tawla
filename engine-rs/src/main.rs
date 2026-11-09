@@ -617,6 +617,66 @@ fn cmd_liftdata(m: &HashMap<String, String>) {
     for h in handles { print!("{}", h.join().unwrap()); }
 }
 
+
+/// Roll out a list of positions. stdin lines: "label<TAB>me;op;mpin;opin" with the
+/// player to move = me. Prints the equity for the player ON ROLL plus outcome rates.
+fn cmd_evalset(m: &HashMap<String, String>) {
+    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let n: u64 = get(m, "games", 3000);
+    let threads: usize = get(m, "threads", 4);
+    println!("label\tequity_on_roll\tse\twin%\twin_double%\tlose_double%\tnet_1ply");
+    let stdin = std::io::stdin();
+    for (k, line) in stdin.lock().lines().enumerate() {
+        let line = line.unwrap();
+        let Some((label, pos)) = line.split_once('\t') else { continue };
+        let f: Vec<&str> = pos.trim().split(';').collect();
+        let parse = |s: &str| -> [u8; 25] { let v: Vec<u8> = s.split(',').map(|x| x.parse().unwrap()).collect(); v.try_into().unwrap() };
+        let s = State { me: parse(f[0]), op: parse(f[1]), mpin: f[2].parse().unwrap(), opin: f[3].parse().unwrap() };
+        // rollout() reports for the player who just moved; here that is the opponent.
+        let (mean, se, t) = rollout(&net, s, n, 7000 + k as u64, threads);
+        let g = t.games as f64;
+        let mut sc = Scratch::new(&net);
+        let one = equity(net.eval(&s, &mut sc));
+        println!("{}\t{:+.3}\t{:.3}\t{:.1}\t{:.1}\t{:.1}\t{:+.3}", label, -mean, se,
+            100.0 * t.wins[1] as f64 / g, 100.0 * t.doubles[1] as f64 / g, 100.0 * t.doubles[0] as f64 / g, one);
+        std::io::stdout().flush().unwrap();
+    }
+}
+
+/// How often the Egyptian mother rule decides games differently from Greek Plakoto:
+/// mother-pin endings in which the pinner still had checkers on its own start.
+fn cmd_motherstats(m: &HashMap<String, String>) {
+    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let n: u64 = get(m, "games", 20000);
+    let mut pl = NetPlayer::new(net);
+    let mut rng = Rng::new(555);
+    let mut gen = MoveGen::default();
+    let mut moves = Vec::new();
+    let (mut mothers, mut own_start_occupied, mut turn_sum) = (0u64, 0u64, 0u64);
+    for _ in 0..n {
+        let mut s = State::initial();
+        for turn in 1..3000u32 {
+            let (d1, d2) = (rng.die(), rng.die());
+            gen.legal_moves(&s, d1, d2, &mut moves);
+            if moves.is_empty() { s = s.flip(); continue; }
+            let i = if moves.len() == 1 { 0 } else { pl.choose(&s, &moves, &mut rng) };
+            let mv = moves[i];
+            if mv.outcome > 0 {
+                if mv.after.me[0] < 15 {
+                    mothers += 1;
+                    turn_sum += turn as u64;
+                    if mv.after.me[24] > 0 { own_start_occupied += 1; }
+                }
+                break;
+            }
+            s = mv.after.flip();
+        }
+    }
+    println!("games {}: mother-pin endings {} ({:.2}%), average turn {:.1}", n, mothers, 100.0 * mothers as f64 / n as f64, turn_sum as f64 / mothers.max(1) as f64);
+    println!("  ...of which the pinner still had checkers on its own start (game would continue under Greek rules): {} ({:.2}% of all games)",
+        own_start_occupied, 100.0 * own_start_occupied as f64 / n as f64);
+}
+
 fn cmd_speed() {
     let mut gen = MoveGen::default();
     let mut rng = Rng::new(3);
@@ -646,6 +706,8 @@ fn main() {
         "speed" => cmd_speed(),
         "pinvalue" => cmd_pinvalue(&m),
         "choose" => cmd_choose(&m),
+        "evalset" => cmd_evalset(&m),
+        "motherstats" => cmd_motherstats(&m),
         "stats" => cmd_stats(&m),
         "quiz" => cmd_quiz(&m),
         "releases" => cmd_releases(&m),

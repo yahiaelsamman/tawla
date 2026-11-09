@@ -186,6 +186,12 @@ impl Tally {
 }
 
 pub fn make_player(spec: &str) -> Box<dyn Player + Send> {
+    if let Some(rest) = spec.strip_prefix("rule:") {
+        // rule:<name>:<net path>
+        let (rule, path) = rest.split_once(':').expect("rule:<name>:<net>");
+        let net = Arc::new(Net::load(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
+        return Box::new(RulePlayer::new(rule, net));
+    }
     match spec {
         "random" => Box::new(RandomPlayer),
         "heuristic" => Box::new(HeuristicPlayer),
@@ -222,4 +228,99 @@ pub fn bench(a: &str, b: &str, n: u64, seed: u64, threads: usize) -> Tally {
         total.merge(&h.join().unwrap());
     }
     total
+}
+
+
+// ------------------------------------------------------------------ rule players
+/// Max rolls (out of 36) with which the opponent can pin one of my blots in `s`
+/// (mover's view, after the move).
+pub fn max_blot_shots(s: &State) -> u32 {
+    let f = s.flip();
+    (1..25).filter(|&p| is_my_blot(s, p)).map(|p| pin_shots(&f, 25 - p)).max().unwrap_or(0)
+}
+
+/// Does move `m` (from `s`) obey the named rule of thumb?
+pub fn obeys(rule: &str, s: &State, m: &Move) -> bool {
+    let a = &m.after;
+    if m.outcome > 0 {
+        return true;
+    }
+    let new_pins = |lo: usize, hi: usize| (lo..=hi).any(|p| a.i_pin_at(p) && !s.i_pin_at(p));
+    match rule {
+        // never lift a home-board pin on purpose
+        "nolift" => !(1..7).any(|p| s.i_pin_at(p) && !a.i_pin_at(p)),
+        // trade-up exception allowed: lifting a 5/6 pin is fine if the move pins deeper (2-4)
+        "nolift_tradeup" => !(1..7).any(|p| s.i_pin_at(p) && !a.i_pin_at(p) && !(p >= 5 && new_pins(2, 4))),
+        // take a pin whenever one is available (anywhere)
+        "alwayspin" => new_pins(1, 24),
+        // take a pin in the home board whenever one is available
+        "homepin" => new_pins(1, 6),
+        // never leave a blot that 6+ rolls can pin
+        "safe" => max_blot_shots(a) < 6,
+        // never leave a single checker on the start (clear it in pairs)
+        "pairs" => a.me[START] != 1,
+        // before the bear-off, never add checkers to points 1-2
+        "nobury" => {
+            let outside: u32 = (7..25).map(|p| s.me[p] as u32).sum();
+            outside == 0 || (a.me[1] + a.me[2]) <= (s.me[1] + s.me[2])
+        }
+        // while one of my checkers is pinned, don't bring more checkers into my home
+        "nocrash" => {
+            if s.opin == 0 { return true; }
+            let home = |x: &State| (1..7).map(|p| x.me[p] as u32).sum::<u32>() + x.me[0] as u32;
+            home(a) <= home(s)
+        }
+        // fairer versions: moves that make a new pin are always allowed
+        "nobury2" => new_pins(1, 24) || obeys("nobury", s, m),
+        "nocrash2" => new_pins(1, 24) || obeys("nocrash", s, m),
+        // milder caution: never leave a blot that 12+ rolls (1 in 3) can pin
+        "safe12" => max_blot_shots(a) < 12,
+        // make as many points (2+ checkers) as possible: handled in RulePlayer (maximiser)
+        "blocks" => true,
+        _ => panic!("unknown rule {}", rule),
+    }
+}
+
+fn made_points(s: &State) -> u32 {
+    (1..25).filter(|&p| s.me[p] >= 2 || s.i_pin_at(p)).count() as u32
+}
+
+/// The net, restricted to moves that obey a rule (if any legal move does).
+pub struct RulePlayer {
+    rule: String,
+    net: NetPlayer,
+    pub decisions: u64,
+    pub changed: u64,
+}
+impl RulePlayer {
+    pub fn new(rule: &str, net: Arc<Net>) -> Self {
+        RulePlayer { rule: rule.to_string(), net: NetPlayer::new(net), decisions: 0, changed: 0 }
+    }
+}
+impl Player for RulePlayer {
+    fn choose(&mut self, s: &State, moves: &[Move], rng: &mut Rng) -> usize {
+        let free = self.net.choose(s, moves, rng);
+        let allowed: Vec<usize> = if self.rule == "blocks" {
+            let best = moves.iter().map(|m| made_points(&m.after)).max().unwrap_or(0);
+            (0..moves.len()).filter(|&i| moves[i].outcome > 0 || made_points(&moves[i].after) == best).collect()
+        } else {
+            (0..moves.len()).filter(|&i| obeys(&self.rule, s, &moves[i])).collect()
+        };
+        self.decisions += 1;
+        if allowed.is_empty() || allowed.contains(&free) {
+            return free;
+        }
+        self.changed += 1;
+        let mut best = (f32::NEG_INFINITY, allowed[0]);
+        for &i in &allowed {
+            let v = if moves[i].outcome > 0 { 10.0 * moves[i].outcome as f32 } else { self.net.move_value(&moves[i]) };
+            if v > best.0 { best = (v, i); }
+        }
+        best.1
+    }
+}
+impl Drop for RulePlayer {
+    fn drop(&mut self) {
+        eprintln!("RULESTATS {} decisions {} changed {}", self.rule, self.decisions, self.changed);
+    }
 }

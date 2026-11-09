@@ -68,3 +68,13 @@ Plan:
   - Conclusion: this network (253 inputs, 100 hidden units, 1-ply) has plateaued. More of the same self-play doesn't help.
     td-best.net stays the 2M net (the guide's numbers come from it). The 3M checkpoint is kept locally (nets/td-3000k.net, not committed).
 - Ideas for a stronger bot: 2-ply look-ahead (Palamedes measured about +0.07 ppg), a bigger hidden layer, more expert features (escape/prime), pin-endgame databases.
+
+## Session 4 (9 Nov): experiments instead of more training
+- 3M was no better than 2M, so we skipped a 5M run and tested theories instead (results in analysis/experiments/, guide v2.2 §5–§9, §12):
+  - Rule players (`rule:<name>:<net>` in bench): nolift −0.02, pairs −0.03, homepin −0.06, alwayspin −0.15, safe(6) −0.34, safe12 −0.33, nobury2 −0.29, nocrash2 −0.32, blocks −0.85 ppg.
+  - A lone mother costs about 0.07 ppg per pinning roll; leaving two is never worse than leaving none.
+  - Standoffs: depth beats numbers (one point of depth ≈ 1 ppg); at equal depth about +0.13 per extra stacked checker; moving first is about −0.1.
+  - Stacking on the pin in the bear-off: +0.10 (pin on 3) / +0.29 (pin on 4).
+  - Mother rule: Egyptian vs Greek differs in 0.8% of games.
+  - Skill vs luck: bot vs club-level heuristic wins 95% of sets to 3; near-equal players 53%.
+  - Corrected the guide: Mistake 6 is no longer a general "don't bury" rule, and "don't crash when pinned" is rejected.

@@ -1,0 +1,12 @@
+LONE MOTHER: cost of leaving exactly one checker on your start (opponent on roll)
+equities are for YOU (the player with the start checkers)
+
+runner_distance	shots_on_mother/36	none_left	one_left	two_left	cost_of_lone_mother
+2	12	+0.36	-0.41	+0.45	-0.85
+6	15	+0.40	-0.62	+0.45	-1.07
+8	2	+0.41	+0.37	+0.47	-0.10
+9	2	+0.40	+0.25	+0.44	-0.19
+12	1	+0.24	+0.16	+0.24	-0.08
+14	0	+0.13	+0.14	+0.17	-0.03
+17	0	+0.06	+0.06	+0.06	-0.00
+18	1	-0.00	-0.06	-0.01	-0.06

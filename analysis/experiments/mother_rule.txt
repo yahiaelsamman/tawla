@@ -1,0 +1,2 @@
+games 20000: mother-pin endings 852 (4.26%), average turn 44.2
+  ...of which the pinner still had checkers on its own start (game would continue under Greek rules): 164 (0.82% of all games)

@@ -1,6 +1,6 @@
-# Mahbusa (محبوسة) Strategy Guide, v2.1
+# Mahbusa (محبوسة) Strategy Guide, v2.2
 
-*v2.1, 6 November 2026. v1 collected everything already known: the Palamedes computer analysis, expert Plakoto writing, and dice maths. v2 adds results from **our own Mahbusa bot**, a neural network trained on 2 million self-play games under Egyptian rules.*
+*v2.2, 9 November 2026. v1 collected everything already known: the Palamedes computer analysis, expert Plakoto writing, and dice maths. v2 adds results from **our own Mahbusa bot**, a neural network trained on 2 million self-play games under Egyptian rules.*
 
 Every claim carries a tag showing how solid it is:
 
@@ -64,7 +64,8 @@ Words used below:
 7. **Never lift a home pin on purpose.** Let the dice force you. The one exception: trade a pin on your 5 or 6 for a deeper one on 2–4 (§7). [Our bot]
 8. **Clear the last two checkers off your start together** (§5, §11). [Our bot, Math]
 9. **Pinned yourself? Get a counter-pin.** It roughly doubles your winning chances (§8, §11). [Our bot]
-10. **Don't bury checkers on your 1- and 2-points early.** Move your back checkers and keep spares for timing (§11). [Our bot]
+10. **Calculated risk beats safety.** Refusing every blot that 1 roll in 3 could pin costs a third of a point per game (§12). [Our bot]
+11. **Depth beats numbers.** In a pin standoff, a pin one point deeper is worth more than six extra checkers on yours (§6). [Our bot]
 
 ---
 
@@ -187,7 +188,17 @@ So: **be very safe in the opening.** The typical worst blot in the opening can o
 
 - Being pinned on the start **loses double at once**. Being pinned just in front of it (your 21–23) is nearly as bad, because the checker is trapped at the very beginning of its journey. [Expert]
 - **Empty the start "as early as practical"**, and also move off 21–23 once you have blocks further along. [Expert]
-- **Be careful when you're down to your last checker on 24.** The mother is in danger only once exactly one checker is left there. Before leaving one checker on 24, count the shots at it from every opponent checker below it. Usually it's better to leave **two or none**. [Math]
+- **Be careful when you're down to your last checker on 24.** The mother is in danger only once exactly one checker is left there. Before leaving one checker on 24, count the shots at it from every opponent checker below it. Usually it's better to leave **two or none**. [Math, Our bot]
+- **What a lone mother costs** [Our bot]: we played out the same position with zero, one or two checkers left on the start, and an opponent runner at different distances (3,000 games each):
+
+  | Rolls that can pin your lone mother | Cost of leaving one checker instead of two or none |
+  |---|---|
+  | 15 (runner 6 pips away) | **−1.07 points** |
+  | 12 (runner 2 pips away) | −0.85 |
+  | 2 | −0.10 to −0.19 |
+  | 0–1 | under 0.1 |
+
+  **Rule of thumb: a lone mother costs about 0.07 points for every roll that can pin it.** Leaving **two** was never worse than leaving none, so you don't need to rush the last pair off.
 - Your mother is safe once the opponent has no checkers left that could still reach your 24 (they're all past it or pinned). [Math]
 - **How fast?** Our bot empties its start by its **13th turn** on average (half of games between turns 11 and 15), and in 97% of games it gets the start empty. Between strong players only **4–5% of games end with a mother pin**. With random play it's about 70%, so guarding the mother is a skill that clearly pays. [Our bot]
 
@@ -229,9 +240,24 @@ Deep pins (2–4) are rare because strong players rarely leave a blot there, but
 
 **A pin is a cheap block.** One checker does the job of two. A run of pins and blocks forms a **prime** (a wall). Six blocks in a row can't be passed at all. [Expert]
 
-**Piling on.** Every extra checker you stack on a pin is one more turn before you're forced to lift it. [Expert]
+**Piling on.** Every extra checker you stack on a pin is one more turn before you're forced to lift it. [Expert] Measured: at equal depth, **each extra checker on your pin (compared with theirs) is worth about +0.13 points** (see the standoff table below). [Our bot]
 
 **The release race.** When both players hold a pin, the game often comes down to who is forced to release first. Count which rolls force each side to move a pinning checker. That happens when you have no other legal moves, especially once your other checkers are all home. The side with **more checkers piled on the deeper pin** usually wins the race. [Expert]
+
+**The standoff, measured** [Our bot]: both players pin each other in their home boards and everything else is home. We changed only the depth of each pin and how many checkers sit on it (2,000 games per position, you on roll):
+
+| Situation | Your equity |
+|---|---|
+| Equal depth (both on the 4-point), equal stacks | about −0.1 (having to move first hurts slightly) |
+| Equal depth, you 7 checkers on your pin, they 1 | **+0.71** |
+| Equal depth, you 1, they 7 | **−0.88** |
+| Your pin on 3, theirs on their 4 (you're deeper), equal stacks | about **+0.8 to +1.0** |
+| Your pin on 4, theirs on their 3 (they're deeper), equal stacks | about **−1.0** |
+| They're deeper, but you have 7 on your pin against their 1 | still **−0.54** |
+
+- **Depth beats numbers.** One point of depth is worth about a full point, more than six extra checkers on the shallower pin.
+- Among equal-depth pins, **more checkers on your pin wins the race**: roughly +0.13 per checker of difference.
+- **Moving first in a standoff is a small disadvantage**, because the player who runs out of spare moves first must lift.
 
 **Timing.** A block or pin is only worth as much as you can afford to keep it. If your other checkers will soon run out of moves and force you to break the wall, it's worth much less. **The side that can wait without wrecking its position usually wins.** [Expert]
 
@@ -284,6 +310,13 @@ While you hold a pin on, say, your 3-point, your checker there is the last thing
 
 Palamedes's bot originally bore off "normally" in these positions. It got clearly stronger once it learned to stack on the pin. [Palamedes]
 
+Measured with the same pip count, the pinned opponent checker being their only one outside home (8,000 games each) [Our bot]:
+
+| Your pin | 5 checkers stacked on the pin | Pin held by 1, others spread | Gain from stacking |
+|---|---|---|---|
+| your 3-point | mars 88% (+1.88) | mars 78% (+1.78) | **+0.10** |
+| your 4-point | mars 88% (+1.88) | mars 59% (+1.59) | **+0.29** |
+
 ---
 
 ## 8. When you are the one pinned
@@ -294,7 +327,7 @@ Little has been written about this. The bot data below is the first hard evidenc
 - Losing a single game is far better than a mars. When you're badly pinned, aim to **bear off at least one checker** if there's any chance, because that saves a point. [Math]
 - **Your best hope is a counter-pin.** In 6,000 self-play games, players who got a checker pinned deep in the opponent's home (on their own 19–24 points) won **57% of the time if they also held a pin of their own**, against only **25% without one**. Without a counter-pin they lost a mars 54% of the time (26% with one). Part of this is that players who hold pins are already doing well, but the gap is huge. **When you're pinned, hunting for a counter-pin comes first.** [Our bot]
 - A counter-pin starts a **release race**: whoever runs out of spare moves first must lift their pin (§6). Keep spare checkers that can move without breaking your pin. [Expert]
-- **Don't crash your position early.** If you rush everything home, you'll be forced to wreck your blocks while still waiting. [To test]
+- ~~Don't crash your position early.~~ **Tested and rejected.** We had the bot follow "while one of your checkers is pinned, don't bring more checkers home" (pinning moves still allowed). It lost **0.32 points per game** against its normal self. While pinned, keep playing normally: build your home, look for the counter-pin, and keep the race going. [Our bot]
 
 ---
 
@@ -316,6 +349,16 @@ Chance of winning a 3-point set from each score, using the Plakoto match table b
 - **The opponent needs 1 point:** their mars costs you nothing extra. You can play bolder and take more pinning risks.
 - **The opponent needs 2 points:** a mars ends the set for them. Be extra careful with your mother and your first-quadrant blots.
 - **You need 2 points:** a mars wins the set. Pins in their home are worth even more than usual.
+
+**How much is skill, how much is luck?** [Our bot] From the measured game results of each pairing, here is the chance that the stronger side wins a set:
+
+| Pairing | One game | Set to 3 | Set to 5 | Set to 7 |
+|---|---|---|---|---|
+| Strong bot vs careful club player (our rule-based bot) | 81.5% | **95%** | 98% | 99.5% |
+| Strong bot vs early bot (50k training games) | 60% | 66% | 71% | 74% |
+| Two nearly equal players (+0.06 points per game) | 52% | 53% | 54% | 55% |
+
+A real skill gap shows up within one short set. Between players of similar strength, a set to 3 is close to a coin toss, so judge your progress over many sets.
 
 ---
 
@@ -419,7 +462,7 @@ X off:  0  pips: 314    O off:  0  pips: 286
 - Wrong: the "solid" building plays such as 21/18 14/11 11/8 8/5 (**−1.72**) or 24/21 (3) 21/18 (−1.60).
 - That's a swing of more than **2 points**. When you're pinned, a counter-pin is your way back into the game (§8). A deep one, like this pin on your 2-point, is the best of all.
 
-### Mistake 6: burying checkers on your 1- and 2-points
+### Mistake 6: pushing home checkers deeper while back checkers still need to come round
 
 You roll **3-1** on turn 29. You hold a pin on your 3-point with two checkers on it, and a spare on your 4-point:
 
@@ -433,19 +476,46 @@ X off:  0  pips: 249    O off:  0  pips: 226
 
 - **Best: 19/16 19/18**: bring your back checkers forward (**+0.98**).
 - Wrong: 4/1 3/2, pushing home checkers deeper (**+0.26**).
-- Checkers on your 1- and 2-points are out of play for the rest of the game. Your spare checkers in and around home are your **timing**: they absorb future rolls so the dice never force you off your pin (§7). Move the back checkers while you can.
-- This was the single most common pattern in the bot-vs-heuristic comparison: in **19%** of the heuristic's mistakes before the bear-off, it moved a checker to its 1- or 2-point when the bot didn't.
+- Here, your spare home checkers are your **timing**: they absorb future rolls so the dice never force you off your pin (§7). The back checkers are the ones that need to move.
+- **But this is not a general ban on your 1- and 2-points.** When we made the bot follow "never add checkers to your 1- or 2-point before the bear-off" (pins allowed), it lost **0.29 points per game** (§12). In Mahbusa those points sit right in front of the opponent's start, so checkers there are a wall, not dead weight. The lesson is narrower: don't spend a roll deepening your home when back checkers still need to come round.
 
 ---
 
-## 12. Open questions for v3
+## 12. Testing the rules of thumb
 
-Answered so far: second-player replies (§3), the value of a pin by point (§6), how much risk strong play takes (§4), how fast to unstack (§5), clear rules for lifting pins (§7), counter-pins as defence (§8), and six costly mistakes with diagrams (§11).
+We turned common rules of thumb into strict rules and made the bot obey them: it picked its best move among those that follow the rule, whenever one existed. Then it played 10,000 games against its normal self. The cost shows how much each rule gives away against perfect play. A cheap rule is a good habit for humans; an expensive one is a myth or needs exceptions. [Our bot]
+
+| Rule (followed strictly) | How often it changed the bot's move | Cost per game |
+|---|---|---|
+| Never lift a home-board pin on purpose (§7) | 0.9% | −0.02 (noise level) |
+| Never leave a single checker on your start (§5) | 1.3% | −0.03 |
+| Always take a pin in your home board when you can | 0.9% | −0.06 |
+| Always take a pin anywhere when you can | 2.2% | **−0.15** |
+| Never leave a blot that 6+ rolls can pin | 8.9% | **−0.34** |
+| Never leave a blot that 12+ rolls can pin | 7.2% | **−0.33** |
+| Never add checkers to your 1- or 2-point before the bear-off | 18.6% | **−0.29** |
+| While pinned, don't bring more checkers home | 11.6% | **−0.32** |
+| Always make as many points as possible | 32.6% | **−0.85** |
+
+What this tells us:
+- **Good habits (nearly free):** never lifting a home pin, and not leaving a lone checker on your start. Follow these strictly and you lose almost nothing.
+- **Pin with judgment, not on reflex.** Deep home pins are usually right (§6), but grabbing every pin costs 0.15 points per game. Some pins expose too much or break your structure.
+- **Mahbusa rewards calculated risk.** Even mild caution, refusing blots that 1 roll in 3 could pin, costs a third of a point per game. Strong play leaves risky blots when the payoff is worth it (§4).
+- **Your 1- and 2-points aren't "buried".** They're the wall in front of the opponent's start (§11, Mistake 6).
+- **Blocks aren't everything.** Maximising made points is the worst rule of all (−0.85).
+- **Grading:** a rule costing under 0.05 points per game is a safe habit; 0.1–0.2 is a tendency with real exceptions; 0.3 or more is wrong as a rule.
+
+Other questions answered this round:
+- **Does the Egyptian mother rule matter?** In 20,000 bot games, 4.3% ended with a mother pin. Only **0.8% of games** ended that way while the pinner still had checkers on its own start, the case where Greek Plakoto would let the game continue. In practice, **the rule difference almost never matters.** [Our bot]
+- **More training?** A network trained on 3 million games was no stronger than the 2-million one (50.1% over 20,000 games), so all numbers in this guide come from the 2M bot. [Our bot]
+
+## 13. Open questions
+
+Answered so far: second-player replies (§3), how much risk strong play takes (§4), the cost of a lone mother (§5), the value of a pin and the pin standoff (§6), clear rules for lifting pins and stacking on them (§7), counter-pins and not freezing up when pinned (§8), skill vs luck in a set (§9), six costly mistakes (§11), tested rules of thumb and the mother-rule question (§12).
 
 Still open:
 - **Even more positions**: a larger, searchable quiz built from `analysis/net2m/quiz_candidates.tsv`.
 - **Being pinned**: a fuller defensive plan beyond "get a counter-pin".
-- Whether the Egyptian mother rule changes anything compared with Greek Plakoto (expected: almost nothing).
 
 ---
 
