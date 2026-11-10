@@ -4,6 +4,7 @@ The goal is to work out and write down winning strategy for Mahbusa, the Egyptia
 
 | Path | What it is |
 |---|---|
+| `REVIEW_BRIEF.md` | **Start here for a review**: goals, decisions, evidence, known weaknesses. |
 | `guide/STRATEGY_GUIDE.md` | **The strategy guide.** Every claim is tagged with how solid it is. |
 | `web/` | **Play in the browser**: open `web/index.html` (no install). A wooden tawla board, the trained bot, and a coach that rates your moves. |
 | `research/RESEARCH.md` | Rules, sources, the existing strategy knowledge and computer analysis. |
