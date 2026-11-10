@@ -1,29 +1,28 @@
-# Review brief: Mahbusa strategy project
+# Methods, evidence and limitations
 
-A self-contained summary of what has been built, every decision taken, the evidence behind each one, and the weak spots. It's written for a reviewer who wants to judge whether the approach is sound and what should be done differently. As of 10 Nov 2026, repo `yahiaelsamman/tawla`, branch `main`.
+What was built, how each decision was made, the evidence behind it, and the weak spots. It's written for a reader who wants to judge how far the guide can be trusted. As of November 2026.
 
 ---
 
-## 1. Goal and priorities (from the project owner)
+## 1. Goal and priorities
 
 - **Primary goal:** a **written strategy guide for humans** for Mahbusa (محبوسة), the Egyptian pinning variant of tawla/backgammon.
 - **Secondary goal:** a strong bot. Nice to have, not the focus.
-- The owner asked for simulation and/or machine learning to find what actually wins, not only to restate folk wisdom.
-- House rules were explicitly out of scope; the game is played as standard Egyptian Mahbusa.
-- The owner is new to neural networks and worried about losing momentum, so deliverables were kept incremental and visible (guide v1, then engine, then bot, then guide v2.x).
+- Simulation and machine learning are used to find what actually wins, not only to restate folk wisdom.
+- House rules are out of scope; the game is played as standard Egyptian Mahbusa.
 
 ## 2. Rules (decisions and sources)
 
 **Mahbusa = Plakoto (Greece) = Tapa-family pinning game.** Four independent sources say so: Mamoun's Plakoto primer ("in Egypt, where it is known as Mahbooseh"), Papahristou & Refanidis 2011 ("'Mahbusa' in some Arab countries"), Wikipedia (Plakoto/Tapa), and Mamoun's book subtitle. The Arabic and Egyptian write-ups (Jawaker's official rules, Egyptian Streets) match Plakoto point for point.
 
-Implemented rules (all confirmed by the owner):
+Implemented rules:
 
 | Rule | Decision | Source / note |
 |---|---|---|
 | Setup | All 15 checkers on your 24-point (the opponent's 1-point); opposite directions; home = 1–6 | all sources |
-| Start | One die each, higher starts, **then re-roll both dice** (opening doubles allowed); winner of a game starts the next | Plakoto rule; owner confirmed "like Plakoto" |
+| Start | One die each, higher starts, **then re-roll both dice** (opening doubles allowed); winner of a game starts the next | Plakoto rule |
 | Pinning | Landing on a lone enemy checker pins it until **all** your checkers leave; a pinner can't be pinned; a pin or 2+ checkers block a point | all sources |
-| Mother | Pinning the opponent's last checker on its start = **immediate double win, no exception** | Jawaker (Egyptian/Arab); Greek Plakoto has an exception (configurable, `mother_exception`) |
+| Mother | Pinning the opponent's last checker on its start = **immediate double win, no exception** | Jawaker (Egyptian/Arab); Greek Plakoto has an exception (configurable in the Python engine only, `mother_exception`) |
 | Forced moves | Use both dice if possible; if only one can be used, the larger one | standard; Plakoto sources |
 | Bear-off | Only when all 15 are home **and none is pinned**; exact die, or a higher die from the highest point; bearing off is optional | Jawaker, Mamoun, bkgm |
 | Scoring | 1 point; **mars** = 2 if the loser has borne off nothing; mother pin = 2; no triples, no cube | all sources |
@@ -113,7 +112,7 @@ Unless noted: 2M net, 1-ply move choice, rollouts with the net on both sides, an
 10. **Statistical rigour is light:** standard errors are reported but there's no multiple-comparison control, and some "ties" rest on differences of 1–2 SE.
 11. **Rules risk:** the opening re-roll and the strict mother rule are decided. Regional variation in Egypt wasn't surveyed beyond the sources above.
 
-## 9. Candidate next steps (unprioritised)
+## 9. Possible future work
 
 - **External validation:** compare a sample of mid-game and bear-off positions against Palamedes / Polygammon (free Windows app), or against strong human players.
 - **Stronger oracle:** 2-ply (or 3-ply with pruning) for analysis; variance-reduced or truncated rollouts; a bigger net or extra features (escape probability, prime features) trained from scratch; the reverse-offline TD variant; pin-endgame databases.
@@ -130,10 +129,10 @@ src/mahbusa/, tests/         Python engine, heuristic bot, terminal play (pytest
 engine-rs/                   Rust engine, trainer, analysis commands; run_training.sh (resumable),
                              run_analysis.sh, run_rule_tests.sh, run_position_tests.sh; nets/td-best.net
 web/                         browser board (open web/index.html), coach, JS engine
-analysis/                    1M-net results (top level), net2m/ (2M net, used by the guide),
+analysis/                    net2m/ (2M net, used by the guide), net1m/ (older 1M net),
                              pins/ (lift decisions, gzipped), experiments/ (rule tests, controlled positions)
 scripts/                     shot table, quiz rendering/categorising, experiment builders, summaries
-PROGRESS.md                  chronological work log
+docs/METHODS.md              this file
 ```
 
 Setup:
@@ -156,6 +155,3 @@ Example: test a rule of thumb as a policy.
 ./target/release/mahbusa-rs bench --a rule:nolift:nets/td-best.net --b nets/td-best.net --games 10000
 ```
 
-Operational notes:
-- Cloud containers restart while idle, so long runs must be resumable. `run_training.sh` resumes from `nets/td-latest.net`.
-- Commits are authored by the owner's account.
