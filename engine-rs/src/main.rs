@@ -475,6 +475,60 @@ fn cmd_compare(m: &HashMap<String, String>) {
     }
 }
 
+/// Check one-move (static) judgements against playouts.
+/// stdin lines: "label<TAB>me;op;mpin;opin<TAB>d1d2<TAB>mode", mode = "lift:<pin point>" or "quiz".
+/// lift:p  compares the net's best move that keeps the pin on p with its best move that lifts it.
+/// quiz    compares the net's choice with the heuristic bot's choice (skipped if they agree).
+/// Output: label, move A, move B, 1-ply values, playout equities and standard errors
+/// (A = keep / net's move, B = lift / heuristic's move; equities are for the player who moves).
+fn cmd_verify(m: &HashMap<String, String>) {
+    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let n: u64 = get(m, "games", 1000);
+    let threads: usize = get(m, "threads", 4);
+    let mut pl = NetPlayer::new(net.clone());
+    let mut heur = play::HeuristicPlayer;
+    let mut rng = Rng::new(1);
+    let mut gen = MoveGen::default();
+    let mut moves = Vec::new();
+    println!("label\tmode\tmoveA\tmoveB\tnetA\tnetB\trollA\tseA\trollB\tseB");
+    let stdin = std::io::stdin();
+    for (k, line) in stdin.lock().lines().enumerate() {
+        let line = line.unwrap();
+        let f: Vec<&str> = line.trim_end().split('\t').collect();
+        if f.len() != 4 { continue; }
+        let pos: Vec<&str> = f[1].split(';').collect();
+        let parse = |s: &str| -> [u8; 25] { let v: Vec<u8> = s.split(',').map(|x| x.parse().unwrap()).collect(); v.try_into().unwrap() };
+        let s = State { me: parse(pos[0]), op: parse(pos[1]), mpin: pos[2].parse().unwrap(), opin: pos[3].parse().unwrap() };
+        let d = f[2].as_bytes();
+        gen.legal_moves(&s, d[0] - b'0', d[1] - b'0', &mut moves);
+        if moves.len() < 2 { continue; }
+        let (a, b): (usize, usize) = if let Some(p) = f[3].strip_prefix("lift:") {
+            let p: usize = p.parse().unwrap();
+            let mut keep = (f32::NEG_INFINITY, usize::MAX);
+            let mut lift = (f32::NEG_INFINITY, usize::MAX);
+            let mut has_win = false;
+            for (i, mv) in moves.iter().enumerate() {
+                if mv.outcome > 0 { has_win = true; continue; }
+                let v = pl.move_value(mv);
+                if mv.after.i_pin_at(p) { if v > keep.0 { keep = (v, i); } } else if v > lift.0 { lift = (v, i); }
+            }
+            if has_win || keep.1 == usize::MAX || lift.1 == usize::MAX { continue; }
+            (keep.1, lift.1)
+        } else {
+            let bi = pl.choose(&s, &moves, &mut rng);
+            let hi = heur.choose(&s, &moves, &mut rng);
+            if bi == hi || moves[bi].outcome > 0 || moves[hi].outcome > 0 { continue; }
+            (bi, hi)
+        };
+        let (va, vb) = (pl.move_value(&moves[a]), pl.move_value(&moves[b]));
+        let (ra, sa, _) = rollout(&net, moves[a].after.flip(), n, 12345 + 2 * k as u64, threads);
+        let (rb, sb, _) = rollout(&net, moves[b].after.flip(), n, 12346 + 2 * k as u64, threads);
+        // rollout() reports the player who just moved (the mover here), so these are the mover's equities.
+        println!("{}\t{}\t{}\t{}\t{:+.3}\t{:+.3}\t{:+.3}\t{:.3}\t{:+.3}\t{:.3}", f[0], f[3], moves[a].notation(), moves[b].notation(), va, vb, ra, sa, rb, sb);
+        std::io::stdout().flush().unwrap();
+    }
+}
+
 
 /// Release and defence statistics from net self-play.
 /// Releases of home-board pins (pinner's point 1..6): voluntary vs forced, by the
@@ -715,6 +769,7 @@ fn main() {
         "releases" => cmd_releases(&m),
         "liftdata" => cmd_liftdata(&m),
         "compare" => cmd_compare(&m),
+        "verify" => cmd_verify(&m),
         "replies" => cmd_replies(&m),
         _ => eprintln!(
             "usage: mahbusa-rs <command> [--key value ...]\n\
@@ -731,6 +786,7 @@ fn main() {
              \x20 quiz         positions where the heuristic bot is much worse than the net\n\
              \x20 compare      roll out the best moves in one position (--pos --dice)\n\
              \x20 evalset      roll out a list of positions from stdin\n\
+             \x20 verify       check one-move judgements against playouts (stdin cases)\n\
              \x20 motherstats  how often Egyptian and Greek mother rules decide a game differently\n\
              \x20 choose       persistent move chooser used by the Python front-end\n\
              \x20 speed        random-play speed check"

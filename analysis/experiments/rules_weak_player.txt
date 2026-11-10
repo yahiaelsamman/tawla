@@ -1,0 +1,6 @@
+20000 games  hrule:nolift vs heuristic: win 50.5% ±0.7  ppg +0.014 ±0.020  doubles 16.5%/16.2%  mother-pin 7.9%  avg turns 92.4
+  nolift: the rule changed the heuristic bot's move in 1342 of 784056 decisions (0.2%)
+20000 games  hrule:nolift_tradeup vs heuristic: win 50.6% ±0.7  ppg +0.021 ±0.019  doubles 16.4%/15.5%  mother-pin 7.5%  avg turns 92.6
+  nolift_tradeup: the rule changed the heuristic bot's move in 1027 of 785676 decisions (0.1%)
+20000 games  hrule:pairs vs heuristic: win 49.5% ±0.7  ppg -0.015 ±0.019  doubles 15.8%/16.4%  mother-pin 7.7%  avg turns 92.6
+  pairs: the rule changed the heuristic bot's move in 6004 of 785399 decisions (0.8%)
