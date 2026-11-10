@@ -116,11 +116,11 @@ The best first move for every roll, from 100,000-game computer playouts: [Palame
 
 ### Replying as the second player [Our bot]
 
-The same rule holds for the reply. **For 302 of 315 non-double replies (96%), the bot splits two checkers off the start** (by its one-move look-ahead, no playouts), one per die, exactly like an opening move. The exceptions are instructive.
+The same rule holds for the reply. **For 302 of 315 non-double replies (96%), the bot splits two checkers off the start** (by its one-move look-ahead). We re-checked 84 replies with playouts (four different first rolls, 2,000 games per candidate): the best reply changed in 8 of them, always between nearly equal plays, and the split-two rule held in 56 of the 60 non-double replies (93%), one per die, exactly like an opening move. The exceptions are instructive.
 
 **1. With a runner facing you, small rolls may run instead of split.** After most openings that bring an opponent checker forward (6-2, 6-3, 6-4, 6-5, 6-6, 3-3, 5-5), the bot plays a **2-1 reply as 24/21 with one checker, not 24/22 24/23**. Example: against a 6-x opening the opponent has a checker on your 7-point. From there your 22 and 23 are 15 and 16 away (hit by 5-5 and 4-4), but your 21 is 14 away, which **no roll can hit**. A few 3-1 replies are played 24/20 for similar reasons. *Count the shots from their runner, and put your checkers where it can't reach them.* [Our bot, Math]
 
-**2. Punish an exposed builder with a double.** The opening book leaves builders on 19 and 21 because only one roll hits each. If you're the one who rolls it, take it. **Each of these pins is worth about +0.9 points** (by the bot's one-move look-ahead):
+**2. Punish an exposed builder with a double.** The opening book leaves builders on 19 and 21 because only one roll hits each. If you're the one who rolls it, take it. **Each of these pins is worth about +0.9 to +1.0 points** (2,000 playouts each: +1.00 for the 5-5 pin after a 3-1 opening, +0.89 for the 6-6 pin after a 6-5 opening):
 
 | Opponent's builder on their... | That is your... | Your roll | Play |
 |---|---|---|---|

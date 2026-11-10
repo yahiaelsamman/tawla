@@ -2,3 +2,5 @@
    200000 games    34.1 games/s  vs heuristic: 500 games  net vs heuristic: win 77.2% ±3.7  ppg +0.882 ±0.112  doubles 40.2%/6.4%  mother-pin 7.2%  avg turns 91.3
    300000 games    32.7 games/s  vs heuristic: 500 games  net vs heuristic: win 79.0% ±3.6  ppg +0.978 ±0.106  doubles 43.4%/3.6%  mother-pin 4.0%  avg turns 92.8
    400000 games    27.3 games/s  vs heuristic: 500 games  net vs heuristic: win 78.0% ±3.6  ppg +0.924 ±0.109  doubles 41.4%/5.0%  mother-pin 4.8%  avg turns 92.7
+   500000 games    46.4 games/s  vs heuristic: 500 games  net vs heuristic: win 82.0% ±3.4  ppg +1.104 ±0.103  doubles 49.8%/3.4%  mother-pin 7.0%  avg turns 91.0
+   600000 games    51.1 games/s  vs heuristic: 500 games  net vs heuristic: win 79.6% ±3.5  ppg +1.000 ±0.106  doubles 44.8%/4.0%  mother-pin 5.8%  avg turns 92.0
