@@ -67,6 +67,7 @@ Rust subcommands: `train`, `bench`, `opening`, `replies`, `pinvalue`, `stats`, `
 - **Network:** 253 → 100 sigmoid → 3 sigmoid (W, WD, LD); equity = 2W − 1 + WD − LD.
 - **Training:** online TD(0) (update after every move toward the next position's value, inverted for side to move), greedy 1-ply self-play, **Hogwild with 4 threads** (lock-free shared weights). Learning rate 0.1 up to 1M games, 0.03 for 1–2M, 0.01 for 2–3M. Weights initialised uniform ±0.1. About 100 games/s.
   - This differs from Palamedes, who used reverse offline updates with target recalculation and initialised weights at ±0.5.
+  - Hogwild is formally a data race, so the committed net can't be regenerated bit for bit (`--threads 1` trains deterministically). Every analysis run from the committed net is seeded and repeatable.
 - **Strength:**
   - Against the heuristic: 50k games 71% → 1M 78–80% → 2M **81.5% (+1.06 ppg)**; random: 100%.
   - Head-to-head: 1M beats 50k by +0.32, 500k by +0.11; 2M beats 1M by **+0.061 (10k games, 52.2%)**; 3M vs 2M **+0.006 (20k games, 50.1% ±0.7)**. It has plateaued.
@@ -85,10 +86,12 @@ Unless noted: 2M net, 1-ply move choice, rollouts with the net on both sides, an
 | Pin statistics in play | 20k self-play games | pin on 2: pinner wins 93% (83% mars); on 3: 81%; on 4: 69% |
 | Risk profile | 20k self-play games | worst blot about 2.5/36 in turns 1–5, up to 6.7/36 in turns 16–20 |
 | Unstacking speed | 20k self-play games | start emptied by own turn 13 (median); mother-pin endings 4–5% |
-| Lifting pins | 134k keep-or-lift decisions from 8k games, **1-ply equities** | lifting right 3%; "never lift" agrees 97% (avg loss 0.004/decision); trade a 5/6-pin for a deeper 2–4 pin: right 41%; never lift when the pinned checker is the opponent's last straggler (0.3%) or the pin is on 2–3 (0.4%) |
+| Lifting pins | 134k keep-or-lift decisions from 8k games, **1-ply equities**; then 300 sampled decisions re-checked with playouts | lifting right 3%; "never lift" agrees 97% (avg loss 0.004/decision); trade a 5/6-pin for a deeper 2–4 pin: right 41% by 1-ply value, 53/100 by playouts with a mean difference of +0.02 (a wash); never lift when the pinned checker is the opponent's last straggler (0.3%) or the pin is on 2–3 (0.4%). Playouts confirmed "keep" in 91 of 92 decidable cases |
 | Counter-pins | 6k self-play games, **correlational** | deep-pinned players win 57% with a counter-pin vs 25% without |
 | Six "costly mistakes" | positions where the heuristic's choice was worse than the net's (`quiz`), chosen by hand, each verified with 1,000–1,500 rollouts per candidate | e.g. take the deep pin (+0.5–1.1), don't lift the pin (1.4), clear the last two start checkers together (+0.25), counter-pin when pinned (+2.3) |
-| Rules of thumb as strict policies | net constrained to rule-obeying moves vs plain net, 10k games each | never lift −0.02; never leave a lone mother −0.03; always take a home pin −0.06; always pin −0.15; never leave a 6+-shot blot −0.34; never a 12+-shot blot −0.33; never add to 1–2 before bear-off (pins allowed) −0.29; while pinned don't bring checkers home −0.32; maximise points −0.85 |
+| Rules of thumb as strict policies | net constrained to rule-obeying moves vs plain net: 100k games for the five cheap rules, 10k for the rest | never lift −0.027 ±0.009; never lift except trade-up −0.022; never leave a lone mother −0.019; always take a home pin −0.045; always pin −0.134 (all ±0.009); never leave a 6+-shot blot −0.34; never a 12+-shot blot −0.33; never add to 1–2 before bear-off (pins allowed) −0.29; while pinned don't bring checkers home −0.32; maximise points −0.85 (these ±0.03) |
+| Same rules on the simple bot | heuristic bot constrained to rule-obeying moves vs itself, 20k games each | all cheap rules within ±0.02 of zero (it already obeys them 99%+ of the time); 6+-shot rule −0.08, 12+ +0.01, no-bury −0.14, no-crash −0.07 |
+| Playout check of 1-ply judgements | 400 sampled decisions, 1,000 playouts per move | see §8 point 2 |
 | Lone mother cost | 8 runner distances × {0, 1, 2 checkers on start}, 3k rollouts each | ≈ 0.07 ppg per pinning roll; leaving 2 is never worse than leaving 0 |
 | Pin standoff | 3 depth combinations × 5×5 stack sizes, 2k rollouts each | one point of depth ≈ 1 ppg (beats a 6-checker stack advantage); +0.13 per extra stacked checker at equal depth; moving first ≈ −0.1 |
 | Stacking on the pin in the bear-off | same pips, stacked vs spread, 8k rollouts | +0.10 (pin on 3), +0.29 (pin on 4) |
@@ -101,24 +104,24 @@ Unless noted: 2M net, 1-ply move choice, rollouts with the net on both sides, an
 ## 8. Assumptions and weaknesses a reviewer should check
 
 1. **A single self-trained net is the oracle for nearly every claim.** Its only external check is the opening book. Mid-game and bear-off judgements aren't independently validated, so systematic blind spots of the net would pass straight into the guide.
-2. **1-ply everywhere.** Move choice inside rollouts, the replies table and the lift analysis all use 1-ply. Palamedes measured +0.07 ppg from 2-ply. No variance reduction and no truncated rollouts were used.
-3. **The rule-player test is relative to the same net.** "Cost of rule X" = net-with-constraint vs net, so it measures distance from the net's policy, and an imperfect net can't show a rule that *beats* it. The opponent is the net, not a human, so a rule that's costly against a strong player could still help a human against humans.
+2. **1-ply everywhere.** Move choice inside rollouts, the replies table and the lift analysis all use 1-ply. Palamedes measured +0.07 ppg from 2-ply. No variance reduction and no truncated rollouts were used. *Checked in part:* we compared the 1-ply value with 1,000-game playouts on 400 sampled decisions (`analysis/experiments/verify_summary.txt`). When the 1-ply value says "keep the pin" (the ordinary case) playouts agreed in 91 of 92 decidable cases; for the quiz positions (net vs simple bot) in 67 of 70; where it says "lift" by 0.25 points or more, in 18 of 18 decidable; for small margins (under 0.10) only 62–76% of decidable cases. About a third of cases are too close for 1,000 playouts to decide. So large 1-ply margins are trustworthy and small ones are not. A 2-ply analysis has still not been done.
+3. **The rule-player test is relative to the same net.** "Cost of rule X" = net-with-constraint vs net, so it measures distance from the net's policy, and an imperfect net can't show a rule that *beats* it. The opponent is the net, not a human, so a rule that's costly against a strong player could still help a human against humans. *Tried:* the same rules on the simple rule-based bot (a weaker player). None helped it measurably, mainly because it already follows the cheap rules almost always. That bot already follows guide v1, so it is not a true beginner, and the question for real beginners stays open.
 4. **The "mistakes" baseline is our own heuristic**, not real human play, and the examples were picked by hand. The themes may reflect the heuristic's quirks; for example, it doesn't value bearing off.
 5. **Synthetic positions** (pin value, mother, standoff, stacking) are hand-built and may not be typical. The pin-value setup keeps the start position with one pin and the pinner on roll.
 6. **Correlational self-play statistics** (counter-pin 57% vs 25%, pin win rates by point) are confounded with general position strength.
 7. **Training choices differ from the published recipe:** online TD(0) instead of reverse-offline with target recalculation, Hogwild races, small initial weights, no feature ablation. The plateau at 2M may reflect capacity or features rather than a true limit. No larger net or richer features were tried.
 8. **Money play vs match play:** the net maximises points per game, but Egyptian sets are to 3 points. The guide's set advice uses Palamedes's Plakoto match equity table plus reasoning, not a match-aware bot.
 9. **No endgame databases** (Palamedes built pin-endgame and bear-off databases).
-10. **Statistical rigour is light:** standard errors are reported but there's no multiple-comparison control, and some "ties" rest on differences of 1–2 SE.
+10. **Statistical rigour is modest:** the five cheap rules now have 95% intervals of ±0.009 (100k games), the others ±0.03, but there is no multiple-comparison control, and the playout checks and several guide tables rest on a few thousand games each.
 11. **Rules risk:** the opening re-roll and the strict mother rule are decided. Regional variation in Egypt wasn't surveyed beyond the sources above.
 
 ## 9. Possible future work
 
 - **External validation:** compare a sample of mid-game and bear-off positions against Palamedes / Polygammon (free Windows app), or against strong human players.
 - **Stronger oracle:** 2-ply (or 3-ply with pruning) for analysis; variance-reduced or truncated rollouts; a bigger net or extra features (escape probability, prime features) trained from scratch; the reverse-offline TD variant; pin-endgame databases.
-- **Better rule tests:** run the rule players against a weaker (human-like) opponent as well as the net; test rule *combinations* as a full "human strategy"; report confidence intervals in the guide.
+- **Better rule tests:** test rules on genuinely weak, human-like opponents (the simple bot already follows guide v1); test rule *combinations* as a full "human strategy".
 - **Match-aware play** for sets to 3 (match equity table in move choice) to check the guide's set advice.
-- **Human-facing work:** a quiz or trainer from `analysis/net2m/quiz_candidates.tsv`; check that the guide is usable at the table (length, ordering, Arabic terms).
+- **Human-facing work:** a quiz or trainer from `analysis/net2m/quiz_candidates.tsv`; an Arabic edition of the guide; check that the guide is usable at the table (length, ordering, Arabic terms).
 
 ## 10. Repository map and reproduction
 
