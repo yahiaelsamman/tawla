@@ -271,7 +271,7 @@ Deep pins (2–4) are rare because strong players rarely leave a blot there, but
 
 We collected **134,000 decisions from 8,000 bot games** in which the bot held a pin in its home board and could either keep it or lift it. For each one we compared the best "keep" move with the best "lift" move. [Our bot]
 
-These percentages use the bot's one-move look-ahead judgement of each move. We checked that judgement against playouts (1,000 full games per move) on 300 sampled decisions: where the one-move value says *keep*, playouts agreed in 91 of the 92 cases they could decide (the other 8 were too close to call); where it says *lift* by a clear margin (0.25 points or more), playouts agreed in all 20 cases they could decide; for small margins it was right about 3 times in 4. The rule as a whole was also confirmed in full games (§12).
+These percentages use the bot's one-move look-ahead judgement of each move. We checked that judgement against playouts (1,000 full games per move) on 300 sampled decisions: where the one-move value says *keep*, playouts agreed in 91 of the 92 cases they could decide (the other 8 were too close to call); where it says *lift* by a clear margin (0.25 points or more), playouts agreed in all 18 cases they could decide; for small margins it was right about 3 times in 4. The rule as a whole was also confirmed in full games (§12).
 
 ### Rule 1: don't lift a home pin while any other move exists
 
