@@ -4,3 +4,5 @@
   nolift_tradeup: the rule changed the bot's move in 28772 of 4030744 decisions (0.7%)
 100000 games  rule:pairs:nets/td-best.net vs nets/td-best.net: win 49.5% ±0.3  ppg -0.019 ±0.009  doubles 21.3%/22.2%  mother-pin 3.8%  avg turns 93.7
   pairs: the rule changed the bot's move in 50518 of 4046195 decisions (1.2%)
+100000 games  rule:homepin:nets/td-best.net vs nets/td-best.net: win 48.6% ±0.3  ppg -0.045 ±0.009  doubles 21.0%/22.8%  mother-pin 4.9%  avg turns 93.2
+  homepin: the rule changed the bot's move in 35499 of 4018498 decisions (0.9%)
