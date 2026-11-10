@@ -1,13 +1,13 @@
-# Mahbusa (محبوسة) Strategy Guide, v2.2
+# Mahbusa (محبوسة) Strategy Guide, v2.3
 
-*v2.2, 9 November 2026. v1 collected everything already known: the Palamedes computer analysis, expert Plakoto writing, and dice maths. v2 adds results from **our own Mahbusa bot**, a neural network trained on 2 million self-play games under Egyptian rules.*
+*v2.3, 10 November 2026. v1 collected everything already known: the Palamedes computer analysis, expert Plakoto writing, and dice maths. v2 adds results from **our own Mahbusa bot**, a neural network trained on 2 million self-play games under Egyptian rules.*
 
 Every claim carries a tag showing how solid it is:
 
 | Tag | Meaning |
 |---|---|
 | **[Palamedes]** | Measured by Palamedes, a world-class Plakoto program (100,000 playouts per position). |
-| **[Our bot]** | Measured with our own neural network (2M self-play games, Egyptian rules). It reproduces Palamedes's opening results within statistical error. |
+| **[Our bot]** | Measured with our own neural network (2M self-play games, Egyptian rules). It reproduces Palamedes's opening results within statistical error. It is strong, not perfect: it looks one move ahead, and outside the opening it has not been checked against another strong program (see `docs/METHODS.md`). |
 | **[Expert]** | Advice from experienced players and writers (Mamoun, tavli.net, Tzannes and others). Not measured. |
 | **[Math]** | Follows directly from the rules and the dice. |
 | **[To test]** | A reasonable idea that nobody has measured yet. Our own bot will check it. |
@@ -62,8 +62,8 @@ Words used below:
 5. **Trap early, release late.** Hold a deep pin into your bear-off, and stack checkers on the pinned point to make it last. That turns pins into mars. [Palamedes, Our bot, Expert]
 6. **One early pin is worth about a whole point**; on your 2- or 3-point, more like a mars. Take a deep pin when it's offered, even at the cost of a block (§6, §11). [Our bot]
 7. **Never lift a home pin on purpose.** Let the dice force you. The one exception: trade a pin on your 5 or 6 for a deeper one on 2–4 (§7). [Our bot]
-8. **Clear the last two checkers off your start together** (§5, §11). [Our bot, Math]
-9. **Pinned yourself? Get a counter-pin.** It roughly doubles your winning chances (§8, §11). [Our bot]
+8. **Never leave exactly one checker on your start while anything can still reach it.** Move the last two together (§5, §11). [Our bot, Math]
+9. **Pinned yourself? Get a counter-pin.** Players who had one won twice as often (§8), and the example in §11 shows a swing of 2 points. [Our bot]
 10. **Calculated risk beats safety.** Refusing every blot that 1 roll in 3 could pin costs a third of a point per game (§12). [Our bot]
 11. **Depth beats numbers.** In a pin standoff, a pin one point deeper is worth more than six extra checkers on yours (§6). [Our bot]
 
@@ -116,11 +116,11 @@ The best first move for every roll, from 100,000-game computer playouts: [Palame
 
 ### Replying as the second player [Our bot]
 
-The same rule holds for the reply. **For 302 of 315 non-double replies (96%), the bot splits two checkers off the start**, one per die, exactly like an opening move. The exceptions are instructive.
+The same rule holds for the reply. **For 302 of 315 non-double replies (96%), the bot splits two checkers off the start** (by its one-move look-ahead, no playouts), one per die, exactly like an opening move. The exceptions are instructive.
 
 **1. With a runner facing you, small rolls may run instead of split.** After most openings that bring an opponent checker forward (6-2, 6-3, 6-4, 6-5, 6-6, 3-3, 5-5), the bot plays a **2-1 reply as 24/21 with one checker, not 24/22 24/23**. Example: against a 6-x opening the opponent has a checker on your 7-point. From there your 22 and 23 are 15 and 16 away (hit by 5-5 and 4-4), but your 21 is 14 away, which **no roll can hit**. A few 3-1 replies are played 24/20 for similar reasons. *Count the shots from their runner, and put your checkers where it can't reach them.* [Our bot, Math]
 
-**2. Punish an exposed builder with a double.** The opening book leaves builders on 19 and 21 because only one roll hits each. If you're the one who rolls it, take it. **Each of these pins is worth about +0.9 points:**
+**2. Punish an exposed builder with a double.** The opening book leaves builders on 19 and 21 because only one roll hits each. If you're the one who rolls it, take it. **Each of these pins is worth about +0.9 points** (by the bot's one-move look-ahead):
 
 | Opponent's builder on their... | That is your... | Your roll | Play |
 |---|---|---|---|
@@ -199,6 +199,8 @@ So: **be very safe in the opening.** The typical worst blot in the opening can o
   | 0–1 | under 0.1 |
 
   **Rule of thumb: a lone mother costs about 0.07 points for every roll that can pin it.** Leaving **two** was never worse than leaving none, so you don't need to rush the last pair off.
+
+  This is just arithmetic: a pinned mother turns your current prospects into −2, so each pinning roll costs (2 + your expected result) ÷ 36. That is 0.06 in an even game and 0.07 when you are ahead, and our playouts match. [Math]
 - Your mother is safe once the opponent has no checkers left that could still reach your 24 (they're all past it or pinned). [Math]
 - **How fast?** Our bot empties its start by its **13th turn** on average (half of games between turns 11 and 15), and in 97% of games it gets the start empty. Between strong players only **4–5% of games end with a mother pin**. With random play it's about 70%, so guarding the mother is a skill that clearly pays. [Our bot]
 
@@ -208,7 +210,7 @@ So: **be very safe in the opening.** The typical worst blot in the opening can o
 
 **Where.** The closer a pin is to the opponent's start, the more it's worth. A pin on your **2-, 3- or 4-point** holds the checker at the very start of its 23-point journey home, which is often enough to win a mars. A pin on your 10-point is much weaker. [Expert]
 
-**How much is a pin worth?** [Our bot] We set up the start position with one extra feature: the pinner has a single checker pinning one enemy checker on point p. Then we played 4,000 games from each position:
+**How much is a pin worth?** [Our bot] We set up the start position with one extra feature: the pinner has a single checker pinning one enemy checker on point p. Then we played 4,000 games from each position. These positions are artificial (the pinning checker is simply placed there, which also gains it up to 22 pips), so read the values as a guide to relative worth, not exact prices:
 
 | Pin on your point | Value of the pin (points) | Pinner wins a mars |
 |---|---|---|
@@ -268,6 +270,8 @@ Deep pins (2–4) are rare because strong players rarely leave a blot there, but
 ## 7. Lifting a pin: the rules
 
 We collected **134,000 decisions from 8,000 bot games** in which the bot held a pin in its home board and could either keep it or lift it. For each one we compared the best "keep" move with the best "lift" move. [Our bot]
+
+These percentages use the bot's one-move look-ahead judgement of each move; the rule as a whole was then confirmed in full games (§12).
 
 ### Rule 1: don't lift a home pin while any other move exists
 
@@ -354,7 +358,7 @@ Chance of winning a 3-point set from each score, using the Plakoto match table b
 
 | Pairing | One game | Set to 3 | Set to 5 | Set to 7 |
 |---|---|---|---|---|
-| Strong bot vs careful club player (our rule-based bot) | 81.5% | **95%** | 98% | 99.5% |
+| Strong bot vs our simple rule-based bot (a stand-in for a careful, inexperienced player; not measured against real players) | 81.5% | **95%** | 98% | 99.5% |
 | Strong bot vs early bot (50k training games) | 60% | 66% | 71% | 74% |
 | Two nearly equal players (+0.06 points per game) | 52% | 53% | 54% | 55% |
 
@@ -376,7 +380,7 @@ A real skill gap shows up within one short set. Between players of similar stren
 
 ## 11. Lessons from the bot: six costly mistakes
 
-We had the bot play itself and flagged every position where the simple rules of thumb (our heuristic bot, which plays like a careful club player following v1 of this guide) chose a clearly worse move. Each example below was confirmed with 1,500 playouts per candidate move. [Our bot]
+We had the bot play itself and flagged every position where the simple rules of thumb (our simple rule-based bot, which follows v1 of this guide; it is a stand-in for a careful, inexperienced player and has not been measured against real players) chose a clearly worse move. Each example below was confirmed with 1,500 playouts per candidate move. [Our bot]
 
 In the diagrams **you are X**, moving 24 → 1. `2X` means two of your checkers. `1X/o` means your checker pinning an opponent checker; `1O/x` means one of yours is pinned.
 
@@ -414,7 +418,7 @@ X off:  0  pips: 219    O off:  0  pips: 190
 - Wrong: **4/1** (−1.69). The 4 lifts your pin, freeing the opponent's last checker, and the game turns from difficult into almost certainly a mars against you.
 - **A pin in your home board is your lifeline. Never lift it while any other legal move exists.**
 
-### Mistake 3: leaving your last two checkers on the start
+### Mistake 3: missing the chance to clear your last two start checkers when you are running out of other moves
 
 You roll **6-4**. You have two checkers left on your 24-point, and an opponent blot on your 5-point invites a pin:
 
@@ -428,7 +432,7 @@ X off:  0  pips: 207    O off:  0  pips: 219
 
 - **Best: 24/18 24/20**, both checkers leaving the start together (−0.99).
 - Wrong: 15/11 11/5, pinning on 5 (−1.24).
-- Once one of those two checkers has to leave alone, the other becomes a lone mother that can be pinned for an instant mars. **When you can clear the last two together, do it**, even ahead of a decent pin.
+- Once one of those two checkers has to leave alone, the other becomes a lone mother that can be pinned for an instant mars. Six of your checkers are pinned here, so you have few spare moves and may soon be forced to move one of the pair alone. **When you can clear the last two together, do it**, even ahead of a decent pin. Otherwise two checkers on the start are safe (§5).
 
 ### Mistake 4: running one checker instead of building from the start
 
@@ -483,7 +487,7 @@ X off:  0  pips: 249    O off:  0  pips: 226
 
 ## 12. Testing the rules of thumb
 
-We turned common rules of thumb into strict rules and made the bot obey them: it picked its best move among those that follow the rule, whenever one existed. Then it played 10,000 games against its normal self. The cost shows how much each rule gives away against perfect play. A cheap rule is a good habit for humans; an expensive one is a myth or needs exceptions. [Our bot]
+We turned common rules of thumb into strict rules and made the bot obey them: it picked its best move among those that follow the rule, whenever one existed. Then it played 10,000 games against its normal self. The cost shows how much each rule gives away against the unrestricted bot. A cheap rule is a good habit for humans; an expensive one is a myth or needs exceptions. [Our bot]
 
 | Rule (followed strictly) | How often it changed the bot's move | Cost per game |
 |---|---|---|
@@ -507,7 +511,7 @@ What this tells us:
 
 Other questions answered this round:
 - **Does the Egyptian mother rule matter?** In 20,000 bot games, 4.3% ended with a mother pin. Only **0.8% of games** ended that way while the pinner still had checkers on its own start, the case where Greek Plakoto would let the game continue. In practice, **the rule difference almost never matters.** [Our bot]
-- **More training?** A network trained on 3 million games was no stronger than the 2-million one (50.1% over 20,000 games), so all numbers in this guide come from the 2M bot. [Our bot]
+- **More training?** A network trained on 3 million games was no stronger than the 2-million one (50.1% over 20,000 games, at a lower learning rate). The network has plateaued under this training setup, and all numbers in this guide come from the 2M bot. [Our bot]
 
 ## 13. Open questions
 
