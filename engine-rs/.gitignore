@@ -2,3 +2,4 @@ target/
 nets/*.net
 !nets/td-best.net
 target-analysis/
+!nets/td-alt.net
