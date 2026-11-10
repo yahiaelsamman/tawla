@@ -6,3 +6,5 @@
   pairs: the rule changed the bot's move in 50518 of 4046195 decisions (1.2%)
 100000 games  rule:homepin:nets/td-best.net vs nets/td-best.net: win 48.6% ±0.3  ppg -0.045 ±0.009  doubles 21.0%/22.8%  mother-pin 4.9%  avg turns 93.2
   homepin: the rule changed the bot's move in 35499 of 4018498 decisions (0.9%)
+100000 games  rule:alwayspin:nets/td-best.net vs nets/td-best.net: win 46.0% ±0.3  ppg -0.134 ±0.009  doubles 19.9%/25.3%  mother-pin 6.7%  avg turns 92.2
+  alwayspin: the rule changed the bot's move in 89844 of 3969966 decisions (2.3%)

@@ -271,7 +271,7 @@ Deep pins (2–4) are rare because strong players rarely leave a blot there, but
 
 We collected **134,000 decisions from 8,000 bot games** in which the bot held a pin in its home board and could either keep it or lift it. For each one we compared the best "keep" move with the best "lift" move. [Our bot]
 
-These percentages use the bot's one-move look-ahead judgement of each move; the rule as a whole was then confirmed in full games (§12).
+These percentages use the bot's one-move look-ahead judgement of each move. We checked that judgement against playouts (1,000 full games per move) on 300 sampled decisions: where the one-move value says *keep*, playouts agreed in 91 of the 92 cases they could decide (the other 8 were too close to call); where it says *lift* by a clear margin (0.25 points or more), playouts agreed in all 20 cases they could decide; for small margins it was right about 3 times in 4. The rule as a whole was also confirmed in full games (§12).
 
 ### Rule 1: don't lift a home pin while any other move exists
 
@@ -282,7 +282,7 @@ These percentages use the bot's one-move look-ahead judgement of each move; the 
 
 ### Rule 2: the one exception worth thinking about is trading up
 
-If your pin is on your **5- or 6-point** and this roll lets you make a **new, deeper pin (on your 2-, 3- or 4-point)**, then lift-and-re-pin is a real option. It was right **41% of the time** (46% when the new pin is on your 4-point). Two thirds of all big gains from lifting (more than 0.2 points) came from exactly this trade. Trading a pin for one at the same depth or shallower was right only 6% of the time.
+If your pin is on your **5- or 6-point** and this roll lets you make a **new, deeper pin (on your 2-, 3- or 4-point)**, then lift-and-re-pin is a real option, but only an option. By the bot's one-move value it was right **41% of the time** (46% when the new pin is on your 4-point). When we rolled out 100 sampled cases, lifting came out ahead in 53 and the average difference was a wash (+0.02 points in favour of keeping the old pin), with about as many cases clearly favouring each side. And in full games, letting the bot make this exception did not measurably beat never lifting at all (−0.022 against −0.027 per game, ±0.009, §12). So: **look at it when a deep pin is on offer, count the shots, and don't expect a big gain either way.** Trading a pin for one at the same depth or shallower was right only 6% of the time (one-move value).
 
 Example: you roll **5-3**. You pin on your 5-point (`1X/o`), and the opponent has a lone checker on your 2-point, right in front of their start:
 
@@ -381,6 +381,8 @@ A real skill gap shows up within one short set. Between players of similar stren
 ## 11. Lessons from the bot: six costly mistakes
 
 We had the bot play itself and flagged every position where the simple rules of thumb (our simple rule-based bot, which follows v1 of this guide; it is a stand-in for a careful, inexperienced player and has not been measured against real players) chose a clearly worse move. Each example below was confirmed with 1,500 playouts per candidate move. [Our bot]
+
+The six examples were picked by hand because they teach well. To check that they are not freak cases, we also took 100 random positions of the same kind (the net and the simple bot disagree by 0.25 points or more) and rolled out both moves 1,000 times each. The net's move came out better in 67 of the 70 cases the playouts could decide (the other 30 were too close to call), so the pattern holds beyond the hand-picked examples.
 
 In the diagrams **you are X**, moving 24 → 1. `2X` means two of your checkers. `1X/o` means your checker pinning an opponent checker; `1O/x` means one of yours is pinned.
 
@@ -487,27 +489,30 @@ X off:  0  pips: 249    O off:  0  pips: 226
 
 ## 12. Testing the rules of thumb
 
-We turned common rules of thumb into strict rules and made the bot obey them: it picked its best move among those that follow the rule, whenever one existed. Then it played 10,000 games against its normal self. The cost shows how much each rule gives away against the unrestricted bot. A cheap rule is a good habit for humans; an expensive one is a myth or needs exceptions. [Our bot]
+We turned common rules of thumb into strict rules and made the bot obey them: it picked its best move among those that follow the rule, whenever one existed. Then it played against its normal self. The cost shows how much each rule gives away against the unrestricted bot. A cheap rule is a good habit for humans; an expensive one is a myth or needs exceptions. [Our bot]
 
-| Rule (followed strictly) | How often it changed the bot's move | Cost per game |
-|---|---|---|
-| Never lift a home-board pin on purpose (§7) | 0.9% | −0.02 (noise level) |
-| Never leave a single checker on your start (§5) | 1.3% | −0.03 |
-| Always take a pin in your home board when you can | 0.9% | −0.06 |
-| Always take a pin anywhere when you can | 2.2% | **−0.15** |
-| Never leave a blot that 6+ rolls can pin | 8.9% | **−0.34** |
-| Never leave a blot that 12+ rolls can pin | 7.2% | **−0.33** |
-| Never add checkers to your 1- or 2-point before the bear-off | 18.6% | **−0.29** |
-| While pinned, don't bring more checkers home | 11.6% | **−0.32** |
-| Always make as many points as possible | 32.6% | **−0.85** |
+The first five rules are cheap, so we measured them precisely (100,000 games each); the rest cost so much that 10,000 games were plenty. Every cost carries its 95% interval. We also made the simple rule-based bot (§11) obey each rule and play against its normal self (20,000 games each, interval about ±0.02), to see whether a rule helps a weaker player.
+
+| Rule (followed strictly) | How often it changed the bot's move | Cost for the strong bot (per game) | Effect for the simple bot (per game) |
+|---|---|---|---|
+| Never lift a home-board pin on purpose (§7) | 0.9% | −0.027 ± 0.009 | +0.014 |
+| Never leave a single checker on your start (§5) | 1.2% | −0.019 ± 0.009 | −0.015 |
+| Always take a pin in your home board when you can | 0.9% | −0.045 ± 0.009 | +0.005 |
+| Always take a pin anywhere when you can | 2.3% | **−0.134 ± 0.009** | +0.011 |
+| Never leave a blot that 6+ rolls can pin | 8.9% | **−0.34 ± 0.03** | −0.082 |
+| Never leave a blot that 12+ rolls can pin | 7.2% | **−0.33 ± 0.03** | +0.014 |
+| Never add checkers to your 1- or 2-point before the bear-off | 18.6% | **−0.29 ± 0.03** | −0.144 |
+| While pinned, don't bring more checkers home | 11.6% | **−0.32 ± 0.03** | −0.069 |
+| Always make as many points as possible | 32.6% | **−0.85 ± 0.03** | not tested |
 
 What this tells us:
-- **Good habits (nearly free):** never lifting a home pin, and not leaving a lone checker on your start. Follow these strictly and you lose almost nothing.
-- **Pin with judgment, not on reflex.** Deep home pins are usually right (§6), but grabbing every pin costs 0.15 points per game. Some pins expose too much or break your structure.
+- **Good habits (cheap):** never lifting a home pin, and not leaving a lone checker on your start. Each costs the strong bot only 0.02–0.03 points per game, which is small but real (about three standard errors), so they are habits, not laws.
+- **Pin with judgment, not on reflex.** Deep home pins are usually right (§6), but grabbing every pin costs 0.13 points per game. Some pins expose too much or break your structure.
 - **Mahbusa rewards calculated risk.** Even mild caution, refusing blots that 1 roll in 3 could pin, costs a third of a point per game. Strong play leaves risky blots when the payoff is worth it (§4).
 - **Your 1- and 2-points aren't "buried".** They're the wall in front of the opponent's start (§11, Mistake 6).
 - **Blocks aren't everything.** Maximising made points is the worst rule of all (−0.85).
 - **Grading:** a rule costing under 0.05 points per game is a safe habit; 0.1–0.2 is a tendency with real exceptions; 0.3 or more is wrong as a rule.
+- **The simple bot gains nothing from any rule.** Its numbers are all within about 0.02 of zero or negative. That is partly because it already obeys the cheap rules almost always (they change only 0.1–0.8% of its moves), so there is little left to gain, and it already avoids most risky blots (the 12+ rule changes 1.5% of its moves and costs it nothing). The expensive rules still cost it points, though less than they cost the strong bot (−0.07 to −0.14). Our simple bot already follows v1 of this guide, so it is not a true beginner, and this test cannot tell you whether the rules would help one.
 
 Other questions answered this round:
 - **Does the Egyptian mother rule matter?** In 20,000 bot games, 4.3% ended with a mother pin. Only **0.8% of games** ended that way while the pinner still had checkers on its own start, the case where Greek Plakoto would let the game continue. In practice, **the rule difference almost never matters.** [Our bot]
