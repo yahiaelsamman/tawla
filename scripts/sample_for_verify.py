@@ -48,19 +48,26 @@ def makes_deep_pin(r):
     return any(after.i_pin_at(p) and not s.i_pin_at(p) for p in (2, 3, 4))
 
 
-chosen, used = [], set()
+# The three groups. "big" and "rest" are the first 100 qualifying rows of the shuffled list.
+# "tradeup" is a random sample of ALL trade-up candidates, drawn with its own generator.
+# (An earlier version took the trade-up group from the same shuffled prefix after "big" had used up
+# the rows where lifting is better, which under-represented them. The first 100 candidates of that
+# prefix are still excluded from "rest" so that this group is reproduced exactly.)
+used = set()
 big = [r for r in rows if r["gain"] >= 0.05][:100]
 used.update(id(r) for r in big)
-tradeup = []
+legacy = []
 for r in rows:
-    if len(tradeup) == 100:
+    if len(legacy) == 100:
         break
-    if id(r) in used or int(r["pin_point"]) not in (5, 6):
-        continue
-    if makes_deep_pin(r):
-        tradeup.append(r)
-used.update(id(r) for r in tradeup)
+    if id(r) not in used and int(r["pin_point"]) in (5, 6) and makes_deep_pin(r):
+        legacy.append(r)
+used.update(id(r) for r in legacy)
 rest = [r for r in rows if id(r) not in used and r["gain"] < 0.05][:100]
+population = [r for r in rows if int(r["pin_point"]) in (5, 6) and makes_deep_pin(r)]
+tradeup = random.Random(20261111).sample(population, 100)
+print(f"trade-up population: {len(population)} candidates; lifting better by one-move value in "
+      f"{100 * sum(r['gain'] > 0 for r in population) / len(population):.0f}%")
 
 lines = []
 for name, group in (("lift_big", big), ("lift_tradeup", tradeup), ("lift_rest", rest)):

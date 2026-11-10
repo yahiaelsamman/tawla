@@ -1,1 +1,7 @@
 training: start at 0 games, +100000 games, alpha 0.1, hidden 100, threads 4
+   100000 games    33.5 games/s  vs heuristic: 500 games  net vs heuristic: win 74.2% ±3.8  ppg +0.814 ±0.112  doubles 38.0%/5.0%  mother-pin 4.2%  avg turns 92.5
+done in 2993s
+training: start at 100000 games, +100000 games, alpha 0.1, hidden 100, threads 4
+   200000 games    34.1 games/s  vs heuristic: 500 games  net vs heuristic: win 77.2% ±3.7  ppg +0.882 ±0.112  doubles 40.2%/6.4%  mother-pin 7.2%  avg turns 91.3
+done in 2946s
+training: start at 200000 games, +100000 games, alpha 0.1, hidden 100, threads 4

@@ -485,6 +485,7 @@ fn cmd_verify(m: &HashMap<String, String>) {
     let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 1000);
     let threads: usize = get(m, "threads", 4);
+    let offset: u64 = get(m, "offset", 0); // added to the case number when choosing playout seeds
     let mut pl = NetPlayer::new(net.clone());
     let mut heur = play::HeuristicPlayer;
     let mut rng = Rng::new(1);
@@ -521,8 +522,8 @@ fn cmd_verify(m: &HashMap<String, String>) {
             (bi, hi)
         };
         let (va, vb) = (pl.move_value(&moves[a]), pl.move_value(&moves[b]));
-        let (ra, sa, _) = rollout(&net, moves[a].after.flip(), n, 12345 + 2 * k as u64, threads);
-        let (rb, sb, _) = rollout(&net, moves[b].after.flip(), n, 12346 + 2 * k as u64, threads);
+        let (ra, sa, _) = rollout(&net, moves[a].after.flip(), n, 12345 + 2 * (k as u64 + offset), threads);
+        let (rb, sb, _) = rollout(&net, moves[b].after.flip(), n, 12346 + 2 * (k as u64 + offset), threads);
         // rollout() reports the player who just moved (the mover here), so these are the mover's equities.
         println!("{}\t{}\t{}\t{}\t{:+.3}\t{:+.3}\t{:+.3}\t{:.3}\t{:+.3}\t{:.3}", f[0], f[3], moves[a].notation(), moves[b].notation(), va, vb, ra, sa, rb, sb);
         std::io::stdout().flush().unwrap();
