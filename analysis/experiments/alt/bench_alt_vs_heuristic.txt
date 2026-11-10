@@ -1,0 +1,1 @@
+10000 games  nets/td-alt.net vs heuristic: win 81.1% ±0.8  ppg +1.026 ±0.023  doubles 44.3%/3.9%  mother-pin 5.4%  avg turns 91.7

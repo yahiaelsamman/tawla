@@ -15,5 +15,5 @@ Produced by `engine-rs/run_analysis.sh <net>` (writes to `analysis/net2m/` unles
 | `pin_value.tsv` / `pin_value_clean.tsv` | Value of one early pin by point. In the raw file the equity is the pinned side's (the pinner is on roll); the clean file gives it from the pinner's side. |
 | `selfplay_stats.txt` | 20,000 net-vs-net games: double-win rate, unstacking speed, pin statistics by point, risk profile. |
 | `releases.txt` | When home-board pins are released (voluntary vs forced) and win rates of deep-pinned players with or without a counter-pin. |
-| `quiz_candidates.tsv` | Positions where the heuristic bot's move is much worse than the net's (from `mahbusa-rs quiz`). |
+| `quiz_candidates.tsv` | Positions where the heuristic bot's move is much worse than the net's (from `mahbusa-rs quiz`). The row numbers in `net1m/quiz_verified.txt`-style files refer to the file in the same folder. Guide §11 Mistakes 1–4 are rows of `net1m/quiz_candidates.tsv`, Mistakes 5–6 are rows of `net2m/quiz_candidates.tsv` (`scripts/replication_compare.py` lists them). |
 | `quiz_verified.txt` | Rollout checks of the positions used in guide §11. |

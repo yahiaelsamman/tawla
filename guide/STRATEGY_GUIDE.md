@@ -7,7 +7,7 @@ Every claim carries a tag showing how solid it is:
 | Tag | Meaning |
 |---|---|
 | **[Palamedes]** | Measured by Palamedes, a world-class Plakoto program (100,000 playouts per position). |
-| **[Our bot]** | Measured with our own neural network (2M self-play games, Egyptian rules). It reproduces Palamedes's opening results within statistical error. It is strong, not perfect: it looks one move ahead, and outside the opening it has not been checked against another strong program (see `docs/METHODS.md`). |
+| **[Our bot]** | Measured with our own neural network (2M self-play games, Egyptian rules). It reproduces Palamedes's opening results within statistical error. It is strong, not perfect: it looks one move ahead, and outside the opening it has not been checked against another strong program (see `docs/METHODS.md`). The main findings were repeated with a second, separately trained network and came out the same (`analysis/experiments/replication.md`). |
 | **[Expert]** | Advice from experienced players and writers (Mamoun, tavli.net, Tzannes and others). Not measured. |
 | **[Math]** | Follows directly from the rules and the dice. |
 | **[To test]** | A reasonable idea that nobody has measured yet. Our own bot will check it. |
