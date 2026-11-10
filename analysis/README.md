@@ -1,9 +1,11 @@
 # Analysis results
 
-Produced by `engine-rs/run_analysis.sh <net>` and summarised with `scripts/summarize_analysis.py <dir>`.
+Produced by `engine-rs/run_analysis.sh <net>` (writes to `analysis/net2m/` unless `OUT` is set) and summarised with `scripts/summarize_analysis.py <dir>`.
 
-- `net2m/`: the **2M-game net (td-best / td-final). The guide v2 uses these numbers.**
-- Top level (`analysis/*.tsv`, `*.txt`): the earlier 1M-game net, kept for comparison.
+- `net2m/`: the **2M-game net (`engine-rs/nets/td-best.net`). The guide uses these numbers.**
+- `net1m/`: the earlier 1M-game net, kept for comparison.
+- `pins/`: the keep-or-lift decisions behind guide §7.
+- `experiments/`: controlled-position experiments, rule tests, and the checks of the net's judgement (see the README there).
 
 | File | What it is |
 |---|---|
