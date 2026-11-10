@@ -169,14 +169,19 @@ impl Tally {
     pub fn summary(&self, a: &str, b: &str) -> String {
         let n = self.games.max(1) as f64;
         let w = self.wins[0] as f64 / n;
+        // Each game is worth ±1 or ±2 points, so the mean square is (n + 3d) / n.
+        let d = (self.doubles[0] + self.doubles[1]) as f64;
+        let ppg = self.ppg();
+        let ppg_ci = 1.96 * (((n + 3.0 * d) / n - ppg * ppg).max(0.0) / n).sqrt();
         format!(
-            "{} games  {} vs {}: win {:.1}% ±{:.1}  ppg {:+.3}  doubles {:.1}%/{:.1}%  mother-pin {:.1}%  avg turns {:.1}",
+            "{} games  {} vs {}: win {:.1}% ±{:.1}  ppg {:+.3} ±{:.3}  doubles {:.1}%/{:.1}%  mother-pin {:.1}%  avg turns {:.1}",
             self.games,
             a,
             b,
             100.0 * w,
             196.0 * (w * (1.0 - w) / n).sqrt(),
-            self.ppg(),
+            ppg,
+            ppg_ci,
             100.0 * self.doubles[0] as f64 / n,
             100.0 * self.doubles[1] as f64 / n,
             100.0 * self.mothers as f64 / n,

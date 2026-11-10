@@ -125,6 +125,25 @@ def test_mother_exception_plakoto():
     assert pin_moves and all(m.outcome is None for m in pin_moves)
 
 
+def test_mother_exception_win_when_pinners_start_empties():
+    # Greek rule: I already pin their mother on my 1-point, with one checker still on my start.
+    # Moving that last checker off the start completes the win.
+    s = make({24: 1, 1: 3, 8: 11}, {24: 1, 13: 14}, mpin=[1])
+    s.validate()
+    wins = [m for m in legal_moves(s, 3, 2, PLAKOTO) if m.outcome is not None]
+    assert wins and all(m.outcome == 2 for m in wins)
+    assert all(m.after.me[24] == 0 for m in wins)
+    # Under the Egyptian rule this position cannot arise (the pin would have ended the game).
+
+
+def test_mother_exception_no_win_while_start_occupied():
+    s = make({24: 2, 1: 3, 8: 10}, {24: 1, 13: 14}, mpin=[1])
+    s.validate()
+    for m in legal_moves(s, 3, 2, PLAKOTO):
+        if m.after.me[24] > 0:
+            assert m.outcome is None
+
+
 def test_game_ends_with_mother_reason():
     rng = random.Random(3)
     r = play_game([RandomAgent(), RandomAgent()], rng)

@@ -203,8 +203,10 @@ fn cmd_opening(m: &HashMap<String, String>) {
 }
 
 
-/// Value of a single early pin by point. Start position, except player A (who just
-/// moved) has one checker pinning an opponent checker on A's point p. Opponent on roll.
+/// Value of a single early pin by point. Start position, except player A has one checker
+/// pinning an opponent checker on A's point p. The PINNED side (B) is on roll, and the
+/// printed equities are B's, so they are negative when the pin is good for A.
+/// `scripts/summarize_analysis.py` flips the sign to give the pinner's view.
 fn cmd_pinvalue(m: &HashMap<String, String>) {
     let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 4000);
@@ -212,7 +214,7 @@ fn cmd_pinvalue(m: &HashMap<String, String>) {
     let base = State::initial();
     let (b, bse, _) = rollout(&net, base, n, 77, threads);
     println!("baseline (no pin, opponent on roll): {:+.3} ±{:.3}", b, bse);
-    println!("pin_point\tequity\tse\tgain_vs_baseline\tdouble_win%\tdouble_loss%");
+    println!("pin_point\tpinned_side_equity\tse\tpinned_side_gain\tpinned_double_win%\tpinned_double_loss%");
     for p in 2..24usize {
         let mut s = State::initial();
         s.me[24] -= 1;
@@ -714,6 +716,24 @@ fn main() {
         "liftdata" => cmd_liftdata(&m),
         "compare" => cmd_compare(&m),
         "replies" => cmd_replies(&m),
-        _ => eprintln!("usage: mahbusa-rs <movegen|train|bench|opening|speed> [--key value ...]"),
+        _ => eprintln!(
+            "usage: mahbusa-rs <command> [--key value ...]\n\
+             commands:\n\
+             \x20 movegen      legal moves for positions on stdin (cross-check with the Python engine)\n\
+             \x20 train        TD(0) self-play training (--out --games --alpha --threads --resume ...)\n\
+             \x20 bench        play two players against each other (--a --b --games; a net file, heuristic, random, rule:<name>:<net>)\n\
+             \x20 opening      rollouts of the best first moves for every roll\n\
+             \x20 replies      best second-player reply for every pair of rolls\n\
+             \x20 pinvalue     value of one early pin by point\n\
+             \x20 stats        self-play statistics: pins, risk, how fast the start empties\n\
+             \x20 releases     when home-board pins are released; deep-pinned players with or without a counter-pin\n\
+             \x20 liftdata     keep-or-lift decisions for home-board pins\n\
+             \x20 quiz         positions where the heuristic bot is much worse than the net\n\
+             \x20 compare      roll out the best moves in one position (--pos --dice)\n\
+             \x20 evalset      roll out a list of positions from stdin\n\
+             \x20 motherstats  how often Egyptian and Greek mother rules decide a game differently\n\
+             \x20 choose       persistent move chooser used by the Python front-end\n\
+             \x20 speed        random-play speed check"
+        ),
     }
 }

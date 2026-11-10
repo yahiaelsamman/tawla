@@ -1,4 +1,4 @@
-"""Render quiz positions: python scripts/show_quiz.py analysis/quiz_candidates.tsv ROW [ROW...]"""
+"""Render quiz positions: python scripts/show_quiz.py analysis/net2m/quiz_candidates.tsv ROW [ROW...]"""
 import csv
 import sys
 

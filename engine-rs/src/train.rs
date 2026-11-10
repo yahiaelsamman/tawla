@@ -7,6 +7,10 @@ use std::cell::UnsafeCell;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 
+/// Shared network for Hogwild training: several threads update the same weights without
+/// locks. This is the standard trick and works well in practice, but it is formally a data
+/// race (undefined behaviour in Rust's memory model), and it makes training non-reproducible
+/// bit for bit. `--threads 1` gives deterministic training.
 pub struct Shared(UnsafeCell<Net>);
 unsafe impl Sync for Shared {}
 unsafe impl Send for Shared {}
