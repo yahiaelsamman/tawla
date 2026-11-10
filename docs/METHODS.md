@@ -45,7 +45,7 @@ Measured afterwards: the Egyptian vs Greek mother rule decides only **0.8% of ga
 
 1. **Guide v1 from the literature** first: a fast, motivating deliverable with every claim tagged [Palamedes] / [Expert] / [Math] / [To test].
 2. **Python reference engine** (correctness first), then a **Rust engine** for speed (Python: about 90 random games/s; Rust: about 1,700/s per thread).
-3. **Rule-based heuristic bot** (hand weights encoding guide v1) as a baseline and a "careful club player" proxy.
+3. **Rule-based heuristic bot** (hand weights encoding guide v1) as a baseline and a stand-in for a careful, inexperienced player (never measured against real players).
 4. **TD(0) self-play network** following the published Palamedes recipe, chosen because it's proven on exactly this game family. Hand-tuned or evolved heuristics were judged a dead end: they can only rank strategies we think of.
 5. **Use the network as an oracle** to answer the guide's open questions: rollouts of candidate moves, controlled positions, self-play statistics, and "rule players" (the net constrained by a rule of thumb).
 6. Training was stopped at 2M games after the 3M network showed no gain. More compute on the same architecture was judged not worthwhile.
