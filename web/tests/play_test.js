@@ -20,13 +20,24 @@ const { chromium } = require("playwright");
     if (st.turn !== 0) { await page.waitForTimeout(150); continue; }
     if (!st.dice) { await page.click("#rollBtn"); await page.waitForTimeout(50); turns++; continue; }
     // play the first legal path step by step through the UI handlers (random path)
-    await page.evaluate(() => {
+    // Regression check: the chances meter must not move while a move is half played.
+    const bad = await page.evaluate(() => {
       const H = window.__mahbusa, G = H.G;
-      if (!G.paths.length) return;
+      const meter = () => document.getElementById("lgWin").textContent + "/" + document.getElementById("lgMars").textContent;
+      const bad = [];
+      if (!G.paths.length) return bad;
+      const before = meter();
       const path = G.paths[Math.floor(Math.random() * G.paths.length)];
-      for (const [a, b] of path.steps) { if (H.G.over) return; if (H.G.selected !== a) H.onPoint(a); H.onPoint(b); }
+      for (const [a, b] of path.steps) {
+        if (H.G.over) return bad;
+        if (H.G.selected !== a) H.onPoint(a);
+        H.onPoint(b);
+        if (H.G.partial.length && H.G.partial.length < path.steps.length && meter() !== before) bad.push(`meter changed mid-move: ${before} -> ${meter()}`);
+      }
       if (!H.G.over && H.G.dice) H.confirmMove();
+      return bad;
     });
+    errors.push(...bad);
     if (turns === 6) await page.screenshot({ path: process.argv[2] + "/midgame.png" });
     await page.waitForTimeout(50);
   }

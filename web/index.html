@@ -119,7 +119,7 @@ details ul { padding-inline-start: 1.1em; margin: 6px 0 0; display: grid; gap: 4
       </div>
     </div>
     <div class="card">
-      <div class="label">Your chances (bot's estimate)</div>
+      <div class="label">Your chances (bot's estimate, before the next roll)</div>
       <div class="meter" aria-hidden="true"><span class="w2" id="mW2"></span><span class="w1" id="mW1"></span><span class="l1" id="mL1"></span><span class="l2" id="mL2"></span></div>
       <div class="meter-legend"><span id="lgWin">win –</span><span id="lgMars">mars –</span><span id="lgLoseMars">lose mars –</span></div>
     </div>
@@ -154,6 +154,7 @@ details ul { padding-inline-start: 1.1em; margin: 6px 0 0; display: grid; gap: 4
 <script src="engine.js"></script>
 <script src="net.js"></script>
 <script>
+let METER_POS = null; // set while a half-played move is drawn, see the render wrapper
 (() => {
 "use strict";
 const M = window.Mahbusa;
@@ -343,7 +344,11 @@ function renderPanel() {
   $("undoBtn").disabled = !(myTurn && G.partial.length);
   $("hintBtn").disabled = !(myTurn && G.dice && G.paths.length);
   // meter: human's chances
-  let o = G.turn === 0 ? M.evaluate(NET, G.pos) : (() => { const b = M.evaluate(NET, M.flip(G.pos)); return [1 - b[0], b[2], b[1]]; })();
+  // The meter always uses the real position. While a move is half played, G.pos is temporarily the
+  // half-played position (see the render wrapper below); evaluating that would credit the player
+  // with an extra roll, so METER_POS holds the position as it stood before the move.
+  const mp = METER_POS || G.pos;
+  let o = G.turn === 0 ? M.evaluate(NET, mp) : (() => { const b = M.evaluate(NET, M.flip(mp)); return [1 - b[0], b[2], b[1]]; })();
   if (G.over) o = G.winner === 0 ? [1, G.lastPoints === 2 ? 1 : 0, 0] : [0, 0, G.lastPoints === 2 ? 1 : 0];
   const [w, wd, ld] = o;
   const pct = (x) => `${Math.round(100 * x)}%`;
@@ -559,7 +564,7 @@ document.addEventListener("keydown", (e) => {
 // render() shows the position after any partial move
 const baseRender = render;
 render = function () {
-  if (G.partial.length) { const s = G.pos; G.pos = currentPos(); try { baseRender(); } finally { G.pos = s; } }
+  if (G.partial.length) { const s = G.pos; METER_POS = s; G.pos = currentPos(); try { baseRender(); } finally { G.pos = s; METER_POS = null; } }
   else baseRender();
 };
 
