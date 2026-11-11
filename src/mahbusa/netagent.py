@@ -7,7 +7,7 @@ from pathlib import Path
 from .agents import Agent
 
 ROOT = Path(__file__).resolve().parents[2] / "engine-rs"
-BINARIES = [ROOT / "target-analysis" / "release" / "mahbusa-rs", ROOT / "target" / "release" / "mahbusa-rs"]
+BINARIES = [ROOT / "target" / "release" / "mahbusa-rs", ROOT / "target-analysis" / "release" / "mahbusa-rs"]
 DEFAULT_NETS = [ROOT / "nets" / "td-best.net", ROOT / "nets" / "td-latest.net"]
 
 

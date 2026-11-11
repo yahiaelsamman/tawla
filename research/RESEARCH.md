@@ -21,7 +21,7 @@ The Arabic and Egyptian descriptions (Jawaker's official rules, Egyptian Streets
 
 ## 2. Rules
 
-### 2.1 The rule set we will implement (Egyptian Mahbusa, confirmed by Yahia)
+### 2.1 The rule set we will implement (Egyptian Mahbusa, confirmed by the project owner)
 
 | # | Rule |
 |---|---|

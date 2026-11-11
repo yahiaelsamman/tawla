@@ -1,0 +1,5 @@
+label	equity_on_roll	se	win%	win_double%	lose_double%	net_1ply
+bearoff pin=3 stacked	+1.884	0.004	100.0	88.4	0.0	+1.896
+bearoff pin=3 spread	+1.754	0.005	100.0	75.4	0.0	+1.758
+bearoff pin=4 stacked	+1.893	0.003	100.0	89.2	0.0	+1.834
+bearoff pin=4 spread	+1.599	0.005	100.0	59.9	0.0	+1.474

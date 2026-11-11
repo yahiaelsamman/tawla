@@ -169,14 +169,19 @@ impl Tally {
     pub fn summary(&self, a: &str, b: &str) -> String {
         let n = self.games.max(1) as f64;
         let w = self.wins[0] as f64 / n;
+        // Each game is worth ±1 or ±2 points, so the mean square is (n + 3d) / n.
+        let d = (self.doubles[0] + self.doubles[1]) as f64;
+        let ppg = self.ppg();
+        let ppg_ci = 1.96 * (((n + 3.0 * d) / n - ppg * ppg).max(0.0) / n).sqrt();
         format!(
-            "{} games  {} vs {}: win {:.1}% ±{:.1}  ppg {:+.3}  doubles {:.1}%/{:.1}%  mother-pin {:.1}%  avg turns {:.1}",
+            "{} games  {} vs {}: win {:.1}% ±{:.1}  ppg {:+.3} ±{:.3}  doubles {:.1}%/{:.1}%  mother-pin {:.1}%  avg turns {:.1}",
             self.games,
             a,
             b,
             100.0 * w,
             196.0 * (w * (1.0 - w) / n).sqrt(),
-            self.ppg(),
+            ppg,
+            ppg_ci,
             100.0 * self.doubles[0] as f64 / n,
             100.0 * self.doubles[1] as f64 / n,
             100.0 * self.mothers as f64 / n,
@@ -186,6 +191,10 @@ impl Tally {
 }
 
 pub fn make_player(spec: &str) -> Box<dyn Player + Send> {
+    if let Some(rule) = spec.strip_prefix("hrule:") {
+        // hrule:<name>: the heuristic bot restricted to rule-obeying moves
+        return Box::new(RulePlayer::for_heuristic(rule));
+    }
     if let Some(rest) = spec.strip_prefix("rule:") {
         // rule:<name>:<net path>
         let (rule, path) = rest.split_once(':').expect("rule:<name>:<net>");
@@ -285,21 +294,44 @@ fn made_points(s: &State) -> u32 {
     (1..25).filter(|&p| s.me[p] >= 2 || s.i_pin_at(p)).count() as u32
 }
 
-/// The net, restricted to moves that obey a rule (if any legal move does).
+/// What a rule player restricts: the net, or the heuristic bot.
+enum Base {
+    Net(NetPlayer),
+    Heuristic,
+}
+
+/// A base player (the net, or the heuristic bot), restricted to moves that obey a rule
+/// (if any legal move does).
 pub struct RulePlayer {
     rule: String,
-    net: NetPlayer,
+    base: Base,
     pub decisions: u64,
     pub changed: u64,
 }
 impl RulePlayer {
     pub fn new(rule: &str, net: Arc<Net>) -> Self {
-        RulePlayer { rule: rule.to_string(), net: NetPlayer::new(net), decisions: 0, changed: 0 }
+        RulePlayer { rule: rule.to_string(), base: Base::Net(NetPlayer::new(net)), decisions: 0, changed: 0 }
+    }
+    /// The heuristic bot restricted by a rule (for testing rules on a weaker player).
+    pub fn for_heuristic(rule: &str) -> Self {
+        RulePlayer { rule: rule.to_string(), base: Base::Heuristic, decisions: 0, changed: 0 }
+    }
+    fn free_choice(&mut self, s: &State, moves: &[Move], rng: &mut Rng) -> usize {
+        match &mut self.base {
+            Base::Net(n) => n.choose(s, moves, rng),
+            Base::Heuristic => HeuristicPlayer.choose(s, moves, rng),
+        }
+    }
+    fn value(&mut self, m: &Move) -> f32 {
+        match &mut self.base {
+            Base::Net(n) => if m.outcome > 0 { 10.0 * m.outcome as f32 } else { n.move_value(m) },
+            Base::Heuristic => if m.outcome > 0 { 1000.0 * m.outcome as f32 } else { HeuristicPlayer::evaluate(&m.after) },
+        }
     }
 }
 impl Player for RulePlayer {
     fn choose(&mut self, s: &State, moves: &[Move], rng: &mut Rng) -> usize {
-        let free = self.net.choose(s, moves, rng);
+        let free = self.free_choice(s, moves, rng);
         let allowed: Vec<usize> = if self.rule == "blocks" {
             let best = moves.iter().map(|m| made_points(&m.after)).max().unwrap_or(0);
             (0..moves.len()).filter(|&i| moves[i].outcome > 0 || made_points(&moves[i].after) == best).collect()
@@ -313,7 +345,7 @@ impl Player for RulePlayer {
         self.changed += 1;
         let mut best = (f32::NEG_INFINITY, allowed[0]);
         for &i in &allowed {
-            let v = if moves[i].outcome > 0 { 10.0 * moves[i].outcome as f32 } else { self.net.move_value(&moves[i]) };
+            let v = self.value(&moves[i]);
             if v > best.0 { best = (v, i); }
         }
         best.1

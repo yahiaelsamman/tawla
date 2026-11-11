@@ -1,0 +1,58 @@
+== Mistake 1a (6-4, pin on 6)
+16/10 10/6	net +0.268	rollout +0.360 ±0.045
+24/18 24/20	net -0.247	rollout -0.210 ±0.040
+24/18 20/16	net -0.411	rollout -0.375 ±0.040
+24/18 19/15	net -0.537	rollout -0.508 ±0.041
+
+== Mistake 1b (6-4, pin on 3)
+13/9 9/3	net -0.534	rollout -0.341 ±0.044
+19/13 24/20	net -1.424	rollout -1.474 ±0.029
+20/14 14/10	net -1.455	rollout -1.554 ±0.028
+19/13 20/16	net -1.470	rollout -1.576 ±0.027
+
+== Mistake 2 (3-4, keep the pin)
+19/16	net -0.841	rollout -0.218 ±0.041
+4/1	net -1.860	rollout -1.694 ±0.016
+
+== Mistake 3 (6-4, clear the start)
+24/18 24/20	net -0.660	rollout -0.989 ±0.042
+17/11 15/11	net -1.524	rollout -1.155 ±0.039
+15/11 11/5	net -1.562	rollout -1.243 ±0.037
+17/11 24/20	net -1.960	rollout -1.875 ±0.017
+
+== Mistake 4 (4-3, build)
+24/20 24/21	net +0.111	rollout +0.121 ±0.043
+24/20 20/17	net -0.069	rollout +0.048 ±0.045
+20/16 24/21	net -0.179	rollout -0.163 ±0.044
+22/18 20/17	net -0.371	rollout -0.369 ±0.044
+
+== Mistake 4 alt (3-4, build)
+24/20 24/21	net +1.354	rollout +1.327 ±0.034
+24/20 20/17	net +1.263	rollout +1.254 ±0.035
+20/16 24/21	net +1.127	rollout +1.156 ±0.038
+24/20 18/15	net +1.082	rollout +1.116 ±0.037
+
+== Mistake 5 (3-3, counter-pin)
+14/11 11/8 8/5 5/2	net +0.828	rollout +0.635 ±0.046
+24/21 24/21 24/21 21/18	net -1.498	rollout -1.551 ±0.027
+24/21 24/21 16/13 16/13	net -1.528	rollout -1.525 ±0.028
+24/21 21/18 16/13 16/13	net -1.537	rollout -1.561 ±0.027
+
+== Mistake 6 (3-1, back checkers)
+19/16 19/18	net +0.832	rollout +0.964 ±0.039
+24/21 4/3	net +0.621	rollout +0.559 ±0.042
+19/16 4/3	net +0.581	rollout +0.633 ±0.044
+24/21 19/18	net +0.457	rollout +0.515 ±0.043
+
+== Trade-up example (dice 53)
+24/19 5/2	net +1.605	rollout +1.609 ±0.027
+18/13 5/2	net +1.206	rollout +1.195 ±0.038
+24/19 24/21	net -0.130	rollout +0.007 ±0.041
+24/19 19/16	net -0.290	rollout -0.088 ±0.042
+
+== Trade-up example (dice 63)
+24/18 5/2	net +1.174	rollout +1.182 ±0.036
+22/16 5/2	net +0.986	rollout +1.201 ±0.036
+19/13 5/2	net +0.887	rollout +1.137 ±0.036
+22/16 19/16	net -0.282	rollout -0.159 ±0.042
+

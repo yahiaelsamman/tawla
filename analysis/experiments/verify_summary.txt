@@ -1,0 +1,33 @@
+ONE-MOVE JUDGEMENT vs PLAYOUTS (1,000 playouts per move; net on both sides)
+agree = playout prefers the same move as the one-move value; close = playout difference under 2 standard errors
+
+lift_big: 100 cases   agree 50   disagree 11   close 39
+    of the 61 decided cases, the one-move value was right in 82%
+    one-move margin     <0.10:  35 cases, agree 10, disagree 6, close 19  (right in 62% of decided)
+    one-move margin 0.10-0.25:  45 cases, agree 22, disagree 5, close 18  (right in 81% of decided)
+    one-move margin    >=0.25:  20 cases, agree 18, disagree 0, close 2  (right in 100% of decided)
+    mean (A - B): one-move -0.211, playout -0.168
+    lifting is better: by one-move value in 100/100, by playout point estimate in 78/100; clearly (2 SE) lifting in 50, clearly keeping in 11
+
+lift_tradeup: 100 cases   agree 59   disagree 9   close 32
+    of the 68 decided cases, the one-move value was right in 87%
+    one-move margin     <0.10:  47 cases, agree 16, disagree 5, close 26  (right in 76% of decided)
+    one-move margin 0.10-0.25:  22 cases, agree 16, disagree 2, close 4  (right in 89% of decided)
+    one-move margin    >=0.25:  31 cases, agree 27, disagree 2, close 2  (right in 93% of decided)
+    mean (A - B): one-move +0.039, playout +0.017
+    lifting is better: by one-move value in 47/100, by playout point estimate in 53/100; clearly (2 SE) lifting in 36, clearly keeping in 30
+
+lift_rest: 100 cases   agree 91   disagree 1   close 8
+    of the 92 decided cases, the one-move value was right in 99%
+    one-move margin     <0.10:  25 cases, agree 19, disagree 1, close 5  (right in 95% of decided)
+    one-move margin 0.10-0.25:  14 cases, agree 12, disagree 0, close 2  (right in 100% of decided)
+    one-move margin    >=0.25:  61 cases, agree 60, disagree 0, close 1  (right in 100% of decided)
+    mean (A - B): one-move +0.564, playout +0.705
+    lifting is better: by one-move value in 1/100, by playout point estimate in 4/100; clearly (2 SE) lifting in 0, clearly keeping in 91
+
+quiz: 100 cases   agree 67   disagree 3   close 30
+    of the 70 decided cases, the one-move value was right in 96%
+    one-move margin 0.10-0.25:  57 cases, agree 35, disagree 2, close 20  (right in 95% of decided)
+    one-move margin    >=0.25:  43 cases, agree 32, disagree 1, close 10  (right in 97% of decided)
+    mean (A - B): one-move +0.282, playout +0.208
+

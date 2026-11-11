@@ -1,0 +1,24 @@
+10000 games  rule:nolift:nets/td-alt.net vs nets/td-alt.net: win 48.6% ±1.0  ppg -0.041 ±0.030  doubles 20.8%/22.2%  mother-pin 3.5%  avg turns 93.8
+  nolift: the rule changed the bot's move in 4340 of 406869 decisions (1.1%)
+10000 games  rule:nolift_tradeup:nets/td-alt.net vs nets/td-alt.net: win 49.5% ±1.0  ppg -0.017 ±0.030  doubles 20.8%/21.5%  mother-pin 3.2%  avg turns 94.2
+  nolift_tradeup: the rule changed the bot's move in 3765 of 408431 decisions (0.9%)
+10000 games  rule:alwayspin:nets/td-alt.net vs nets/td-alt.net: win 46.8% ±1.0  ppg -0.109 ±0.030  doubles 20.9%/25.3%  mother-pin 6.1%  avg turns 93.1
+  alwayspin: the rule changed the bot's move in 10817 of 400557 decisions (2.7%)
+10000 games  rule:homepin:nets/td-alt.net vs nets/td-alt.net: win 48.5% ±1.0  ppg -0.042 ±0.030  doubles 21.3%/22.5%  mother-pin 3.9%  avg turns 94.2
+  homepin: the rule changed the bot's move in 3494 of 405433 decisions (0.9%)
+10000 games  rule:safe:nets/td-alt.net vs nets/td-alt.net: win 40.0% ±1.0  ppg -0.347 ±0.028  doubles 12.0%/26.8%  mother-pin 3.4%  avg turns 92.9
+  safe: the rule changed the bot's move in 37544 of 403734 decisions (9.3%)
+10000 games  rule:pairs:nets/td-alt.net vs nets/td-alt.net: win 50.6% ±1.0  ppg +0.020 ±0.030  doubles 22.0%/21.1%  mother-pin 3.3%  avg turns 94.3
+  pairs: the rule changed the bot's move in 7 of 408469 decisions (0.0%)
+10000 games  rule:nobury:nets/td-alt.net vs nets/td-alt.net: win 37.0% ±0.9  ppg -0.323 ±0.029  doubles 18.5%/24.9%  mother-pin 4.1%  avg turns 92.9
+  nobury: the rule changed the bot's move in 77111 of 406331 decisions (19.0%)
+10000 games  rule:nocrash:nets/td-alt.net vs nets/td-alt.net: win 35.4% ±0.9  ppg -0.512 ±0.029  doubles 12.4%/34.5%  mother-pin 4.1%  avg turns 91.9
+  nocrash: the rule changed the bot's move in 56657 of 398078 decisions (14.2%)
+10000 games  rule:blocks:nets/td-alt.net vs nets/td-alt.net: win 23.5% ±0.8  ppg -0.873 ±0.025  doubles 6.9%/41.2%  mother-pin 5.5%  avg turns 92.5
+  blocks: the rule changed the bot's move in 130910 of 393332 decisions (33.3%)
+10000 games  rule:nobury2:nets/td-alt.net vs nets/td-alt.net: win 38.6% ±1.0  ppg -0.279 ±0.029  doubles 19.6%/24.8%  mother-pin 4.1%  avg turns 93.1
+  nobury2: the rule changed the bot's move in 74176 of 406264 decisions (18.3%)
+10000 games  rule:safe12:nets/td-alt.net vs nets/td-alt.net: win 40.5% ±1.0  ppg -0.331 ±0.028  doubles 12.9%/27.0%  mother-pin 3.5%  avg turns 93.0
+  safe12: the rule changed the bot's move in 29318 of 403054 decisions (7.3%)
+10000 games  rule:nocrash2:nets/td-alt.net vs nets/td-alt.net: win 40.2% ±1.0  ppg -0.330 ±0.030  doubles 16.9%/30.2%  mother-pin 4.7%  avg turns 92.4
+  nocrash2: the rule changed the bot's move in 51811 of 399135 decisions (13.0%)

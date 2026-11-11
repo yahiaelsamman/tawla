@@ -1,0 +1,18 @@
+The written material in this repository is licensed under the Creative Commons
+Attribution 4.0 International License (CC BY 4.0):
+
+  guide/            the strategy guide
+  research/RESEARCH.md   the rules and sources notes
+  docs/             methods and evidence
+  analysis/         result files produced by the analysis commands
+
+You may share and adapt it for any purpose, including commercially, as long as you
+give appropriate credit, link to the licence and say if you made changes.
+
+Full legal text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+Everything else (the source code, scripts, tests and the web board) is under the MIT
+licence in the file LICENSE.
+
+The opening book, shot tables and match-equity figures that the guide quotes from the
+published Palamedes papers belong to their authors; see the credits in README.md.

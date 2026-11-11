@@ -177,6 +177,10 @@ def _step(me, op, mpin, opin, p, d, rules: Rules):
         to = 0
         if me[0] == N_CHECKERS:
             outcome = 2 if op[0] == 0 else 1
+    # Greek rule only: a mother pin that was deferred because my own start still held
+    # checkers becomes a win as soon as my start is empty.
+    if outcome is None and rules.mother_exception and (mpin >> 1) & 1 and me[START] == 0:
+        outcome = rules.mother_points
     return me, op, mpin, opin, to, outcome
 
 

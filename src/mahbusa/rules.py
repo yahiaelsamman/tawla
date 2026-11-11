@@ -12,6 +12,9 @@ class Rules:
         True (Greek Plakoto): the game continues if the pinner still has checkers on
         their own starting point; if both mothers end up pinned, the game is a draw.
     mother_points: points scored for a mother pin.
+
+    Only the Python engine implements the Greek option. The Rust engine (and the browser
+    engine, which is a port of it) play the Egyptian rule only.
     """
 
     mother_exception: bool = False
