@@ -12,7 +12,7 @@ The guide's bot picks moves at 1-ply: it plays each legal move and asks the netw
 | Is 2-ply closer to the truth than 1-ply? | On the 400 decisions with 1,000-game playouts (`analysis/experiments/verify/`), the error in judging which of two moves is better drops from 0.139 to 0.099 points, and agreement on decidable cases rises from 269 to 272 of 291. | `verify_vs_2ply.txt` |
 | Opening book | 2-ply agrees with Palamedes on 20 of 21 first rolls (1-ply: 19). It now picks the book move for 2-2; the remaining difference, 5-5, was already settled for the book move by the guide's rollouts. | `opening_2ply_best.tsv` |
 | Guide example positions (§7, §11) | Same best move at 2-ply in all ten. | `examples_2ply.txt` |
-| Rules of thumb, with look-ahead on both sides | See `rules_2ply.txt`: the expensive rules cost about the same as at 1-ply. | `rules_2ply.txt` |
+| Rules of thumb, with look-ahead on both sides (1,500 games each, ±0.08) | Never leave a 6+-shot blot: −0.33 (1-ply: −0.34). While pinned, don't bring checkers home: −0.30 (1-ply: −0.32). Never add to your 1–2 points: −0.25 (1-ply: −0.29). The guide's conclusions stand. The cheap rules (costs of 0.02–0.05) would need far more games than 2-ply allows. | `rules_2ply.txt` |
 
 ## Teaching the look-ahead to the network (distillation): no gain
 

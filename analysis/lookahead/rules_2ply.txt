@@ -1,2 +1,6 @@
 1500 games  rule2:safe:nets/td-best.net vs ply2:nets/td-best.net: win 40.4% ±2.5  ppg -0.327 ±0.072  doubles 12.3%/25.7%  mother-pin 4.3%  avg turns 92.0
   safe: the rule changed the 2-ply bot's move in 5965 of 59978 decisions (9.9%)
+1500 games  rule2:nocrash2:nets/td-best.net vs ply2:nets/td-best.net: win 40.7% ±2.5  ppg -0.303 ±0.078  doubles 18.1%/29.8%  mother-pin 5.0%  avg turns 91.5
+  nocrash2: the rule changed the 2-ply bot's move in 7033 of 59522 decisions (11.8%)
+1500 games  rule2:nobury2:nets/td-best.net vs ply2:nets/td-best.net: win 40.4% ±2.5  ppg -0.245 ±0.078  doubles 20.9%/26.1%  mother-pin 4.4%  avg turns 92.5
+  nobury2: the rule changed the 2-ply bot's move in 10729 of 60526 decisions (17.7%)

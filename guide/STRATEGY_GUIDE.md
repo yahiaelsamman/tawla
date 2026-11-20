@@ -512,6 +512,7 @@ What this tells us:
 - **Your 1- and 2-points aren't "buried".** They're the wall in front of the opponent's start (§11, Mistake 6).
 - **Blocks aren't everything.** Maximising made points is the worst rule of all (−0.85).
 - **Grading:** a rule costing under 0.05 points per game is a safe habit; 0.1–0.2 is a tendency with real exceptions; 0.3 or more is wrong as a rule.
+- **Checked with look-ahead.** We re-ran the three expensive rules with both sides looking one roll further ahead (2-ply, 1,500 games each). The costs came out the same within the margin: −0.33, −0.30 and −0.25 (`analysis/lookahead/`).
 - **The simple bot gains nothing from any rule.** Its numbers are all within about 0.02 of zero or negative. That is partly because it already obeys the cheap rules almost always (they change only 0.1–0.8% of its moves), so there is little left to gain, and it already avoids most risky blots (the 12+ rule changes 1.5% of its moves and costs it nothing). The expensive rules still cost it points, though less than they cost the strong bot (−0.07 to −0.14). Our simple bot already follows v1 of this guide, so it is not a true beginner, and this test cannot tell you whether the rules would help one.
 
 Other questions answered this round:
