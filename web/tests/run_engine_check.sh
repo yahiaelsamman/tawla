@@ -17,3 +17,4 @@ PY=${PYTHON:-python3}
 "$BIN" choose --net "$NET" < "$TMP/cases.txt" > "$TMP/choose.txt"
 node "$ROOT/web/tests/check_net_embed.js" "$ROOT/web/net.js" "$NET"
 node "$ROOT/web/tests/check_engine.js" "$TMP/cases.txt" "$TMP/moves.txt" "$TMP/choose.txt" "$NET"
+node "$ROOT/web/tests/check_ply2.js" "$TMP/cases.txt" "$BIN" "$NET" 60

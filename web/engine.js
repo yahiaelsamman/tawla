@@ -244,6 +244,47 @@
       .sort((a, b) => (b.move.outcome > 0 ? 10 * b.move.outcome : b.value) - (a.move.outcome > 0 ? 10 * a.move.outcome : a.value));
   }
 
+  // ---------------------------------------------------------------- 2-ply look-ahead (port of engine-rs/src/search.rs)
+  const invert = (o) => [1 - o[0], o[2], o[1]];
+  /** 1-ply outputs [W, WD, LD] of a move, mover's view. */
+  function moveOutputs(net, m) {
+    return m.outcome > 0 ? [1, m.outcome >= 2 ? 1 : 0, 0] : invert(evaluate(net, flip(m.after)));
+  }
+  /** 2-ply outputs for the player on roll: each of the 21 rolls answered with the best 1-ply move. */
+  function evaluate2(net, s) {
+    const acc = [0, 0, 0];
+    for (const [d1, d2, w] of ROLLS) {
+      const moves = legalMoves(s, d1, d2);
+      let o;
+      if (!moves.length) o = invert(evaluate(net, flip(s)));
+      else {
+        let best = -Infinity;
+        for (const m of moves) {
+          const mo = moveOutputs(net, m);
+          const v = m.outcome > 0 ? 10 * m.outcome : equity(mo);
+          if (v > best) { best = v; o = mo; }
+        }
+      }
+      for (let k = 0; k < 3; k++) acc[k] += w * o[k];
+    }
+    return acc.map((x) => x / 36);
+  }
+  /** 2-ply equity of a move for the mover. */
+  function moveValue2(net, m) {
+    return m.outcome > 0 ? m.outcome : equity(invert(evaluate2(net, flip(m.after))));
+  }
+  /** Like rankMoves, but the best `keep` moves within `margin` of the best are re-ranked at 2-ply
+   *  (their `value` becomes the 2-ply equity); the rest keep their 1-ply value and order. */
+  function rankMoves2(net, moves, keep = 5, margin = 0.2) {
+    const r = rankMoves(net, moves);
+    if (!r.length || r[0].move.outcome > 0) return r;
+    const n = r.filter((x, i) => i < keep && r[0].value - x.value <= margin).length;
+    if (n < 2) return r;
+    const top = r.slice(0, n).map((x) => ({ move: x.move, value: moveValue2(net, x.move), value1: x.value }));
+    top.sort((a, b) => b.value - a.value);
+    return top.concat(r.slice(n));
+  }
+
   function b64ToBytes(b64) {
     if (typeof atob === "function") {
       const bin = atob(b64);
@@ -257,6 +298,7 @@
   const api = {
     START, N, initial, flip, step, legalPaths, legalMoves, notation, pips, keyOf,
     myPinnedAt, iPinAt, pinShots, encode, N_INPUTS, loadNet, evaluate, equity, moveValue, rankMoves, b64ToBytes,
+    evaluate2, moveValue2, rankMoves2,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Mahbusa = api;

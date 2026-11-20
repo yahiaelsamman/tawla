@@ -135,6 +135,7 @@ details ul { padding-inline-start: 1.1em; margin: 6px 0 0; display: grid; gap: 4
       <div class="opts">
         <label>Match to <select id="matchLen"><option>1</option><option selected>3</option><option>5</option><option>7</option></select></label>
         <label><input type="checkbox" id="coachOn" checked> Coach</label>
+        <label>Bot <select id="botLevel"><option value="2" selected>2-ply (looks ahead)</option><option value="1">1-ply (faster)</option></select></label>
         <button id="newBtn" type="button" class="ghost">New match</button>
       </div>
       <details>
@@ -440,13 +441,19 @@ function humanRoll() {
   render();
 }
 
+// Bot level: 2-ply searches the best few 1-ply candidates one roll deeper (see engine.js rankMoves2).
+function lookAhead() { return $("botLevel").value === "2"; }
+function rank(moves) { return lookAhead() ? M.rankMoves2(NET, moves) : M.rankMoves(NET, moves); }
+
 function confirmMove() {
   const path = completePath();
   if (!path) return;
   const before = G.pos, dice = G.dice;
-  const ranked = M.rankMoves(NET, M.legalMoves(before, dice[0], dice[1]));
+  const ranked = rank(M.legalMoves(before, dice[0], dice[1]));
   const key = M.keyOf(path.after);
   const mine = ranked.find((r) => M.keyOf(r.move.after) === key) || ranked[0];
+  // At 2-ply only the top candidates are searched; give the player's move a 2-ply value too.
+  if (lookAhead() && mine.value1 === undefined && !(mine.move.outcome > 0)) mine.value = M.moveValue2(NET, mine.move);
   const best = ranked[0];
   const loss = Math.max(0, best.value - mine.value);
   const note = M.notation(path.steps);
@@ -482,7 +489,7 @@ function botTurn() {
       render(); showBotDice(d);
       return;
     }
-    const best = M.rankMoves(NET, moves)[0].move;
+    const best = rank(moves)[0].move;
     const mine = toMine(best.steps);
     G.lastBot = { from: new Set(mine.map((s) => s[0])), to: new Set(mine.map((s) => s[1]).filter((x) => x)) };
     const txt = mine.map(([a, b]) => `${a}/${b === 0 ? "off" : b}`).join(" ");
@@ -548,7 +555,7 @@ $("rollBtn").onclick = humanRoll;
 $("playBtn").onclick = confirmMove;
 $("undoBtn").onclick = () => { G.partial = []; G.selected = null; setStatus("Move undone. Click a checker."); render(); };
 $("hintBtn").onclick = () => {
-  const ranked = M.rankMoves(NET, M.legalMoves(G.pos, G.dice[0], G.dice[1]));
+  const ranked = rank(M.legalMoves(G.pos, G.dice[0], G.dice[1]));
   G.hint = M.notation(ranked[0].move.steps);
   render();
 };
