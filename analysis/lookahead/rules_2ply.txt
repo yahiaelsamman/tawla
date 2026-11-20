@@ -1,0 +1,2 @@
+1500 games  rule2:safe:nets/td-best.net vs ply2:nets/td-best.net: win 40.4% ±2.5  ppg -0.327 ±0.072  doubles 12.3%/25.7%  mother-pin 4.3%  avg turns 92.0
+  safe: the rule changed the 2-ply bot's move in 5965 of 59978 decisions (9.9%)
