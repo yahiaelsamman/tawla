@@ -1,26 +1,30 @@
-# Mahbusa (محبوسة) strategy project
+# Mahbusa (محبوسة)
 
-Mahbusa is the Egyptian pinning variant of tawla (backgammon). Internationally it is known as Plakoto (Greece) or Tapa (Bulgaria). This project works out what wins, using a self-trained neural network as a sparring partner and measuring each idea in thousands of games, and writes the results down for human players.
+Mahbusa is the tawla game where you trap ("pin") your opponent's checkers instead of hitting them. Greeks call it Plakoto and Bulgarians call it Tapa. There's plenty written about regular backgammon strategy and almost nothing about this one, especially in Arabic, so this repo tries to work it out.
 
-- **[Read the strategy guide](guide/STRATEGY_GUIDE.md)** (English). Every claim is tagged with how solid the evidence is.
-- **[Play against the bot in your browser](web/index.html)**: open `web/index.html`, no install. A wooden tawla board, the trained bot, and a coach that rates your moves.
-- **[Methods, evidence and limitations](docs/METHODS.md)**: how the findings were produced, and what could be wrong with them.
+What's here:
 
-## Five things the guide says
+- [The strategy guide](guide/STRATEGY_GUIDE.md). Each claim says where it comes from: the Palamedes research, expert advice, plain dice maths, or our own bot.
+- [A board you can play in the browser](web/index.html) against the bot. Download the repo and open `web/index.html`; there's nothing to install. It also tells you after each move whether the bot would have played differently.
+- [How the results were produced](docs/METHODS.md), including what could still be wrong with them.
 
-1. **Split two checkers off the start on every non-double opening roll.** Never run one checker with both dice.
-2. **Count the pin shots before leaving any blot.** How many of the 36 rolls pin it is the most important tactical number.
-3. **A deep early pin is worth about a point, and on your 2- or 3-point close to a mars.** Take it, even at the cost of a block.
-4. **Never lift a home-board pin on purpose.** Hold it into the bear-off and stack checkers on it.
-5. **Pinned yourself? Hunt for a counter-pin.** And in a pin standoff, depth beats numbers.
+## The short version
 
-## How the findings were produced
+- On your first roll, move two checkers off the start, one with each die. Don't run one checker with both.
+- Before you leave a checker alone, count how many of the 36 rolls can pin it.
+- A pin deep in your home (your 2-, 3- or 4-point) is worth about a full point, often a double win. Take it even if it costs you a block.
+- Don't lift a pin in your home board unless the dice force you. Pile checkers on it in the bear-off.
+- If you get pinned, look for a pin of your own. In a pin standoff, the deeper pin usually wins.
 
-The rules were fixed from the sources in `research/RESEARCH.md`. A rule-based bot gave a baseline, and a neural network trained on 2 million self-play games (the published Palamedes recipe) gave a much stronger one. The guide's numbers come from rollouts of controlled positions, self-play statistics, and "rule of thumb" players: the network forced to obey a rule, compared with itself. The bot is strong but not perfect. It looks one move ahead, and apart from the opening book it has not been checked against another strong program. See [docs/METHODS.md](docs/METHODS.md) for details and the list of known weaknesses.
+## How it was done
 
-## Rules implemented (Egyptian Mahbusa)
+The rules come from Arabic and Greek sources (see `research/RESEARCH.md`). The bot is a small neural network that learned by playing itself, following the method of the Palamedes Plakoto program. It trained for 3 million games, but it stopped improving after 2 million, so the 2-million-game version is the one used for the guide. It beats a hand-written rule-based bot 81% of the time and agrees with Palamedes' published opening moves on 19 of 21 rolls.
 
-All 15 checkers start on your 24-point (the opponent's 1-point). Players move in opposite directions. Landing on a lone enemy checker **pins** it until all your checkers leave that point. A pin or 2+ checkers make a block. Pinning the opponent's last checker on their start (the **mother**) wins at once, double. Bear off only when all 15 are home and none is pinned. A win is 1 point, or 2 (**mars**) if the loser has borne off nothing. Full rules are in `research/RESEARCH.md` §2. The Greek mother exception exists as an option in the Python engine (`--plakoto` or `Rules(mother_exception=True)`); the Rust engine and the browser board play the Egyptian rule only.
+Most numbers in the guide come from setting up a position and letting the bot play it out thousands of times, or from making the bot follow a rule of thumb and seeing how much it loses. The bot is strong, not perfect. The weak spots are listed in `docs/METHODS.md`.
+
+## Rules
+
+Standard Egyptian rules, no house rules. Everyone starts with all 15 checkers on their 24-point and you move in opposite directions. Landing on a single enemy checker pins it until you leave. You can't bear off while one of your checkers is pinned. Pinning the opponent's last checker on their starting point (the "mother") wins double on the spot, and so does winning before the loser has borne anything off (mars). The full rules and sources are in `research/RESEARCH.md`. The Python engine can also play the Greek mother rule (`--plakoto`).
 
 ## Quick start
 
@@ -89,9 +93,7 @@ Reproducing the tables in the guide: see the "Repository map and reproduction" s
 
 ## Credits
 
-- The strategy and rules research builds on the Palamedes work of Nikolaos Papahristou and Ioannis Refanidis (papers at <https://github.com/nikpapa/palamedes>), including the opening book and the match-equity table the guide quotes, and on J. Mamoun's Plakoto primer.
-- Other sources (Jawaker's rules, Egyptian Streets, tavli.net, boardgammon.com and more) are listed in `research/RESEARCH.md`.
-- Mahbusa, Plakoto and Tapa are traditional games.
+The research leans heavily on the Palamedes papers by Nikolaos Papahristou and Ioannis Refanidis (<https://github.com/nikpapa/palamedes>), which also supply the opening book and match table quoted in the guide, and on J. Mamoun's Plakoto primer. The other sources are listed in `research/RESEARCH.md`.
 
 ## Licence
 
