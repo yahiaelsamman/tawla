@@ -7,7 +7,7 @@ Every claim carries a tag showing how solid it is:
 | Tag | Meaning |
 |---|---|
 | **[Palamedes]** | Measured by Palamedes, a world-class Plakoto program (100,000 playouts per position). |
-| **[Our bot]** | Measured with our own neural network (2M self-play games, Egyptian rules). It reproduces Palamedes's opening results within statistical error. It is strong, not perfect: it looks one move ahead, and outside the opening it has not been checked against another strong program (see `docs/METHODS.md`). The main findings were repeated with a second, separately trained network and came out the same (`analysis/experiments/replication.md`). |
+| **[Our bot]** | Measured with our own neural network (2M self-play games, Egyptian rules). It reproduces Palamedes's opening results within statistical error. It is strong, not perfect. Its numbers come from play that looks one move ahead; spot checks with an extra roll of look-ahead (2-ply) agree with them (`analysis/lookahead/`). Outside the opening it has not been checked against another strong program (see `docs/METHODS.md`). The main findings were repeated with a second, separately trained network and came out the same (`analysis/experiments/replication.md`). |
 | **[Expert]** | Advice from experienced players and writers (Mamoun, tavli.net, Tzannes and others). Not measured. |
 | **[Math]** | Follows directly from the rules and the dice. |
 | **[To test]** | A reasonable idea that nobody has measured yet. Our own bot will check it. |
@@ -112,7 +112,7 @@ The best first move for every roll, from 100,000-game computer playouts: [Palame
 | Roll | Book play | Equally good alternative |
 |---|---|---|
 | 3-1 | 24/23 24/21 | 24/20 (one checker) |
-| 2-2 | 24/22 (2), 24/20 | 24/22 (4), which our bot rates slightly higher |
+| 2-2 | 24/22 (2), 24/20 | 24/22 (4), which our bot rates slightly higher at 1-ply; with look-ahead (2-ply) it prefers the book play too |
 
 ### Replying as the second player [Our bot]
 
