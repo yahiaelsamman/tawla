@@ -3,6 +3,7 @@
 use crate::features::{is_my_blot, pin_shots};
 use crate::nn::{equity, Net, Scratch};
 use crate::rng::Rng;
+use crate::search::Searcher;
 use crate::state::{Move, MoveGen, State, START};
 use std::sync::Arc;
 
@@ -190,7 +191,27 @@ impl Tally {
     }
 }
 
+/// 2-ply player: 1-ply ranking, move filter, then 2-ply value for the survivors.
+pub struct SearchPlayer {
+    pub s: Searcher,
+}
+impl Player for SearchPlayer {
+    fn choose(&mut self, _s: &State, moves: &[Move], _rng: &mut Rng) -> usize {
+        self.s.choose2(moves).0
+    }
+}
+
 pub fn make_player(spec: &str) -> Box<dyn Player + Send> {
+    if let Some(rest) = spec.strip_prefix("ply2:") {
+        // ply2:<net>  or  ply2:<keep>:<margin>:<net>
+        let parts: Vec<&str> = rest.splitn(3, ':').collect();
+        let (keep, margin, path) = match (parts.len(), parts.first().and_then(|x| x.parse::<usize>().ok())) {
+            (3, Some(k)) => (k, parts[1].parse::<f32>().expect("margin"), parts[2]),
+            _ => (5, 0.2, rest),
+        };
+        let net = Arc::new(Net::load(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
+        return Box::new(SearchPlayer { s: Searcher::new(net, keep, margin) });
+    }
     if let Some(rule) = spec.strip_prefix("hrule:") {
         // hrule:<name>: the heuristic bot restricted to rule-obeying moves
         return Box::new(RulePlayer::for_heuristic(rule));

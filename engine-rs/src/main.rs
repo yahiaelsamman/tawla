@@ -2,6 +2,7 @@ mod features;
 mod nn;
 mod play;
 mod rng;
+mod search;
 mod state;
 mod train;
 
@@ -486,12 +487,15 @@ fn cmd_verify(m: &HashMap<String, String>) {
     let n: u64 = get(m, "games", 1000);
     let threads: usize = get(m, "threads", 4);
     let offset: u64 = get(m, "offset", 0); // added to the case number when choosing playout seeds
+    // --ply2 1: also print the 2-ply equity of both moves (columns ply2A, ply2B); --games 0 skips playouts.
+    let ply2: bool = get(m, "ply2", 0u8) == 1;
+    let mut searcher = search::Searcher::new(net.clone(), 1, 0.0);
     let mut pl = NetPlayer::new(net.clone());
     let mut heur = play::HeuristicPlayer;
     let mut rng = Rng::new(1);
     let mut gen = MoveGen::default();
     let mut moves = Vec::new();
-    println!("label\tmode\tmoveA\tmoveB\tnetA\tnetB\trollA\tseA\trollB\tseB");
+    println!("label\tmode\tmoveA\tmoveB\tnetA\tnetB\trollA\tseA\trollB\tseB{}", if ply2 { "\tply2A\tply2B" } else { "" });
     let stdin = std::io::stdin();
     for (k, line) in stdin.lock().lines().enumerate() {
         let line = line.unwrap();
@@ -522,12 +526,125 @@ fn cmd_verify(m: &HashMap<String, String>) {
             (bi, hi)
         };
         let (va, vb) = (pl.move_value(&moves[a]), pl.move_value(&moves[b]));
-        let (ra, sa, _) = rollout(&net, moves[a].after.flip(), n, 12345 + 2 * (k as u64 + offset), threads);
-        let (rb, sb, _) = rollout(&net, moves[b].after.flip(), n, 12346 + 2 * (k as u64 + offset), threads);
+        let (ra, sa, rb, sb) = if n == 0 { (0.0, 0.0, 0.0, 0.0) } else {
+            let (ra, sa, _) = rollout(&net, moves[a].after.flip(), n, 12345 + 2 * (k as u64 + offset), threads);
+            let (rb, sb, _) = rollout(&net, moves[b].after.flip(), n, 12346 + 2 * (k as u64 + offset), threads);
+            (ra, sa, rb, sb)
+        };
+        let extra = if ply2 {
+            let (pa, pb) = (nn::equity(searcher.out2(&moves[a])), nn::equity(searcher.out2(&moves[b])));
+            format!("\t{:+.3}\t{:+.3}", pa, pb)
+        } else { String::new() };
         // rollout() reports the player who just moved (the mover here), so these are the mover's equities.
-        println!("{}\t{}\t{}\t{}\t{:+.3}\t{:+.3}\t{:+.3}\t{:.3}\t{:+.3}\t{:.3}", f[0], f[3], moves[a].notation(), moves[b].notation(), va, vb, ra, sa, rb, sb);
+        println!("{}\t{}\t{}\t{}\t{:+.3}\t{:+.3}\t{:+.3}\t{:.3}\t{:+.3}\t{:.3}{}", f[0], f[3], moves[a].notation(), moves[b].notation(), va, vb, ra, sa, rb, sb, extra);
         std::io::stdout().flush().unwrap();
     }
+}
+
+/// Distillation data: positions from 1-ply self-play, each labelled with its 2-ply value.
+/// Each turn, with probability --sample the position on roll is recorded, and with the same
+/// probability the position after one random move among the 1-ply top 5 (so the net also learns
+/// the positions it has to compare when choosing). Output lines: "me;op;mpin;opin<TAB>W<TAB>WD<TAB>LD"
+/// with the outputs for the player on roll in that position.
+fn cmd_gen2(m: &HashMap<String, String>) {
+    use std::sync::Mutex;
+    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let n: u64 = get(m, "games", 1000);
+    let p: f64 = get(m, "sample", 0.25);
+    let threads: usize = get(m, "threads", 4);
+    let seed: u64 = get(m, "seed", 1);
+    let out = m.get("out").expect("--out required").clone();
+    let w = Arc::new(Mutex::new(std::io::BufWriter::new(std::fs::File::create(&out).unwrap())));
+    let done = Arc::new(std::sync::atomic::AtomicU64::new(0));
+    let handles: Vec<_> = (0..threads).map(|t| {
+        let (net, w, done) = (net.clone(), w.clone(), done.clone());
+        std::thread::spawn(move || {
+            let mut pl = NetPlayer::new(net.clone());
+            let mut se = search::Searcher::new(net, 5, 10.0);
+            let mut rng = Rng::new(seed.wrapping_mul(7777).wrapping_add(t as u64));
+            let mut gen = MoveGen::default();
+            let mut moves = Vec::new();
+            let mut buf = String::new();
+            let rec = |s: &State, se: &mut search::Searcher, buf: &mut String| {
+                let o = se.eval2(s);
+                buf.push_str(&format!("{};{};{};{}\t{:.5}\t{:.5}\t{:.5}\n", csv(&s.me), csv(&s.op), s.mpin, s.opin, o[0], o[1], o[2]));
+            };
+            loop {
+                if done.fetch_add(1, std::sync::atomic::Ordering::Relaxed) >= n { break; }
+                let mut s = State::initial();
+                for _ in 0..3000u32 {
+                    let (d1, d2) = (rng.die(), rng.die());
+                    gen.legal_moves(&s, d1, d2, &mut moves);
+                    if (rng.below(1_000_000) as f64) < p * 1e6 { rec(&s, &mut se, &mut buf); }
+                    if moves.is_empty() { s = s.flip(); continue; }
+                    if moves.len() > 1 && (rng.below(1_000_000) as f64) < p * 1e6 {
+                        let cands = se.filter(&moves);
+                        let (i, _) = cands[rng.below(cands.len() as u64) as usize];
+                        if moves[i].outcome == 0 { rec(&moves[i].after.flip(), &mut se, &mut buf); }
+                    }
+                    let i = if moves.len() == 1 { 0 } else { pl.choose(&s, &moves, &mut rng) };
+                    let mv = moves[i];
+                    if mv.outcome > 0 { break; }
+                    s = mv.after.flip();
+                }
+                if buf.len() > 1 << 20 { w.lock().unwrap().write_all(buf.as_bytes()).unwrap(); buf.clear(); }
+            }
+            w.lock().unwrap().write_all(buf.as_bytes()).unwrap();
+        })
+    }).collect();
+    for h in handles { h.join().unwrap(); }
+    w.lock().unwrap().flush().unwrap();
+}
+
+/// Supervised training toward labelled outputs (from gen2). Holds out 2% for validation and
+/// reports the mean absolute equity error and the mean squared output error before and after each epoch.
+fn cmd_fit(m: &HashMap<String, String>) {
+    let mut net = Net::load(m.get("net").expect("--net required")).unwrap();
+    let epochs: usize = get(m, "epochs", 3);
+    let alpha: f32 = get(m, "alpha", 0.01);
+    let decay: f32 = get(m, "decay", 0.5);
+    let out = m.get("out").expect("--out required").clone();
+    let mut rng = Rng::new(get(m, "seed", 3));
+    let mut data: Vec<(State, [f32; 3])> = Vec::new();
+    for path in m.get("data").expect("--data required").split(',') {
+        let f = std::fs::File::open(path).unwrap();
+        for line in std::io::BufReader::new(f).lines() {
+            let line = line.unwrap();
+            let mut it = line.split('\t');
+            let pos: Vec<&str> = it.next().unwrap().split(';').collect();
+            let parse = |s: &str| -> [u8; 25] { let v: Vec<u8> = s.split(',').map(|x| x.parse().unwrap()).collect(); v.try_into().unwrap() };
+            let s = State { me: parse(pos[0]), op: parse(pos[1]), mpin: pos[2].parse().unwrap(), opin: pos[3].parse().unwrap() };
+            let o: Vec<f32> = it.map(|x| x.parse().unwrap()).collect();
+            data.push((s, [o[0], o[1], o[2]]));
+        }
+    }
+    for i in (1..data.len()).rev() { let j = rng.below(i as u64 + 1) as usize; data.swap(i, j); }
+    let nval = data.len() / 50;
+    let (val, train) = data.split_at_mut(nval);
+    let mut sc = Scratch::new(&net);
+    let report = |net: &Net, sc: &mut Scratch, val: &[(State, [f32; 3])], tag: &str| {
+        let (mut mae, mut mse) = (0f64, 0f64);
+        for (s, t) in val.iter() {
+            let o = net.eval(s, sc);
+            mae += (equity(o) - equity(*t)).abs() as f64;
+            mse += (0..3).map(|k| ((o[k] - t[k]) as f64).powi(2)).sum::<f64>() / 3.0;
+        }
+        let n = val.len() as f64;
+        eprintln!("{}: validation {} positions, mean |equity error| {:.4}, output MSE {:.5}", tag, val.len(), mae / n, mse / n);
+    };
+    eprintln!("{} training positions", train.len());
+    report(&net, &mut sc, val, "before");
+    let mut a = alpha;
+    for e in 0..epochs {
+        for i in (1..train.len()).rev() { let j = rng.below(i as u64 + 1) as usize; train.swap(i, j); }
+        for (s, t) in train.iter() {
+            let o = net.eval(s, &mut sc);
+            net.train(&mut sc, o, *t, a);
+        }
+        report(&net, &mut sc, val, &format!("epoch {} (alpha {})", e + 1, a));
+        a *= decay;
+    }
+    net.save(&out).unwrap();
 }
 
 
@@ -771,6 +888,8 @@ fn main() {
         "liftdata" => cmd_liftdata(&m),
         "compare" => cmd_compare(&m),
         "verify" => cmd_verify(&m),
+        "gen2" => cmd_gen2(&m),
+        "fit" => cmd_fit(&m),
         "replies" => cmd_replies(&m),
         _ => eprintln!(
             "usage: mahbusa-rs <command> [--key value ...]\n\
@@ -788,6 +907,8 @@ fn main() {
              \x20 compare      roll out the best moves in one position (--pos --dice)\n\
              \x20 evalset      roll out a list of positions from stdin\n\
              \x20 verify       check one-move judgements against playouts (stdin cases)\n\
+             \x20 gen2         self-play positions labelled with their 2-ply value (distillation data)\n\
+             \x20 fit          train a net toward labelled values (--net --data --epochs --alpha --out)\n\
              \x20 motherstats  how often Egyptian and Greek mother rules decide a game differently\n\
              \x20 choose       persistent move chooser used by the Python front-end\n\
              \x20 speed        random-play speed check"
