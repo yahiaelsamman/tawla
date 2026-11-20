@@ -171,16 +171,25 @@ fn cmd_opening(m: &HashMap<String, String>) {
     let n: u64 = get(m, "games", 5000);
     let k: usize = get(m, "top", 3);
     let threads: usize = get(m, "threads", 4);
+    // --games 0 --ply2 1: no playouts, print the 1-ply and 2-ply equity of the top-k moves
+    let ply2: bool = get(m, "ply2", 0u8) == 1;
+    let mut searcher = search::Searcher::new(net.clone(), 1, 0.0);
     let mut gen = MoveGen::default();
     let mut moves = Vec::new();
     let s0 = State::initial();
-    println!("roll\tmove\tnet_eq\trollout_eq\tse\twin%\tdouble_win%\tdouble_loss%");
+    if n == 0 && ply2 { println!("roll\tmove\tnet_eq\tply2_eq"); } else if n == 0 { println!("roll\tmove\tnet_eq"); }
+    else { println!("roll\tmove\tnet_eq\trollout_eq\tse\twin%\tdouble_win%\tdouble_loss%"); }
     for d1 in 1..=6u8 {
         for d2 in 1..=d1 {
             gen.legal_moves(&s0, d1, d2, &mut moves);
             for (rank, (v, mv)) in top_candidates(&net, &s0, &moves, k).into_iter().enumerate() {
                 if n == 0 {
-                    println!("{}{}\t{}\t{:+.3}", d1, d2, mv.notation(), v);
+                    if ply2 {
+                        let e2 = equity(searcher.out2(&mv));
+                        println!("{}{}\t{}\t{:+.3}\t{:+.3}", d1, d2, mv.notation(), v, e2);
+                    } else {
+                        println!("{}{}\t{}\t{:+.3}", d1, d2, mv.notation(), v);
+                    }
                     continue;
                 }
                 let (mean, se, t) = rollout(&net, mv.after.flip(), n, 1000 + rank as u64, threads);
@@ -470,9 +479,14 @@ fn cmd_compare(m: &HashMap<String, String>) {
     let mut moves = Vec::new();
     gen.legal_moves(&s, d[0] - b'0', d[1] - b'0', &mut moves);
     let k: usize = get(m, "top", 4);
+    // --ply2 1 adds the 2-ply equity; --games 0 skips the playouts
+    let ply2: bool = get(m, "ply2", 0u8) == 1;
+    let mut searcher = search::Searcher::new(net.clone(), 1, 0.0);
     for (v, mv) in top_candidates(&net, &s, &moves, k) {
+        let extra = if ply2 { format!("\tply2 {:+.3}", equity(searcher.out2(&mv))) } else { String::new() };
+        if n == 0 { println!("{}\tnet {:+.3}{}", mv.notation(), v, extra); continue; }
         let (e, se, _) = if mv.outcome > 0 { (mv.outcome as f64, 0.0, Tally::new()) } else { rollout(&net, mv.after.flip(), n, 9, threads) };
-        println!("{}\tnet {:+.3}\trollout {:+.3} ±{:.3}", mv.notation(), v, e, se);
+        println!("{}\tnet {:+.3}\trollout {:+.3} ±{:.3}{}", mv.notation(), v, e, se, extra);
     }
 }
 
@@ -600,6 +614,11 @@ fn cmd_gen2(m: &HashMap<String, String>) {
 /// reports the mean absolute equity error and the mean squared output error before and after each epoch.
 fn cmd_fit(m: &HashMap<String, String>) {
     let mut net = Net::load(m.get("net").expect("--net required")).unwrap();
+    let widen: usize = get(m, "widen", 0); // add hidden units before training (same outputs at the start)
+    if widen > 0 {
+        net = net.widen(widen, &mut Rng::new(get(m, "seed", 3) + 1000));
+        eprintln!("widened to {} hidden units", net.n_hid);
+    }
     let epochs: usize = get(m, "epochs", 3);
     let alpha: f32 = get(m, "alpha", 0.01);
     let decay: f32 = get(m, "decay", 0.5);

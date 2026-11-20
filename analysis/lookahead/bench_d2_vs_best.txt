@@ -1,0 +1,1 @@
+20000 games  nets/td-d2.net vs nets/td-best.net: win 50.0% ±0.7  ppg -0.008 ±0.021  doubles 20.9%/21.7%  mother-pin 4.3%  avg turns 93.2

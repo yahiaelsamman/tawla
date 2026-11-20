@@ -44,6 +44,23 @@ impl Net {
         Net { n_in, n_hid, w1, b1, w2, b2, games_trained: 0 }
     }
 
+    /// A wider copy: `extra` new hidden units with small random input weights and zero output
+    /// weights, so the widened net computes exactly the same outputs until it is trained further.
+    pub fn widen(&self, extra: usize, rng: &mut Rng) -> Net {
+        let (n_in, n_old) = (self.n_in, self.n_hid);
+        let n_hid = n_old + extra;
+        let mut w1 = self.w1.clone();
+        let mut b1 = self.b1.clone();
+        for _ in 0..extra * n_in { w1.push((rng.f32() * 2.0 - 1.0) * 0.1); }
+        for _ in 0..extra { b1.push((rng.f32() * 2.0 - 1.0) * 0.1); }
+        let mut w2 = Vec::with_capacity(3 * n_hid);
+        for k in 0..3 {
+            w2.extend_from_slice(&self.w2[k * n_old..(k + 1) * n_old]);
+            w2.extend(std::iter::repeat(0.0).take(extra));
+        }
+        Net { n_in, n_hid, w1, b1, w2, b2: self.b2.clone(), games_trained: self.games_trained }
+    }
+
     /// Forward pass on already-encoded inputs in sc.x; fills sc.h, returns outputs.
     #[inline]
     pub fn forward(&self, sc: &mut Scratch) -> [f32; 3] {

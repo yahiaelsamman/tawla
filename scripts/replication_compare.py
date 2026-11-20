@@ -1,6 +1,6 @@
 """Roll out the guide's example positions with a given net (experiment E4: replication).
 
-    python scripts/replication_compare.py NET OUTFILE [GAMES]
+    python scripts/replication_compare.py NET OUTFILE [GAMES] [extra mahbusa-rs compare args, e.g. --ply2 1]
 
 Runs `mahbusa-rs compare` on the example positions of guide §11 and §7: Mistakes 1-4 are rows of
 analysis/net1m/quiz_candidates.tsv, Mistakes 5-6 are rows of analysis/net2m/quiz_candidates.tsv
@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BIN = ROOT / "engine-rs/target/release/mahbusa-rs"
 net, out = sys.argv[1], sys.argv[2]
 games = sys.argv[3] if len(sys.argv) > 3 else "1500"
+extra = sys.argv[4:]
 
 def load(name):
     return list(csv.DictReader(open(ROOT / name), delimiter="\t"))
@@ -36,7 +37,7 @@ for line in open(ROOT / "analysis/pins/tradeup_verified.txt"):
 
 with open(out, "w") as f:
     for label, pos, dice in cases:
-        res = subprocess.run([str(BIN), "compare", "--net", net, "--pos", pos, "--dice", dice, "--games", games, "--top", "4"],
+        res = subprocess.run([str(BIN), "compare", "--net", net, "--pos", pos, "--dice", dice, "--games", games, "--top", "4", *extra],
                              capture_output=True, text=True, check=True).stdout
         f.write(f"== {label}\n{res}\n")
         f.flush()

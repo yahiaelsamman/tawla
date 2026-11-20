@@ -216,6 +216,12 @@ pub fn make_player(spec: &str) -> Box<dyn Player + Send> {
         // hrule:<name>: the heuristic bot restricted to rule-obeying moves
         return Box::new(RulePlayer::for_heuristic(rule));
     }
+    if let Some(rest) = spec.strip_prefix("rule2:") {
+        // rule2:<name>:<net>: the 2-ply player restricted to rule-obeying moves
+        let (rule, path) = rest.split_once(':').expect("rule2:<name>:<net>");
+        let net = Arc::new(Net::load(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
+        return Box::new(RulePlayer::for_search(rule, net));
+    }
     if let Some(rest) = spec.strip_prefix("rule:") {
         // rule:<name>:<net path>
         let (rule, path) = rest.split_once(':').expect("rule:<name>:<net>");
@@ -319,6 +325,7 @@ fn made_points(s: &State) -> u32 {
 enum Base {
     Net(NetPlayer),
     Heuristic,
+    Search(Searcher),
 }
 
 /// A base player (the net, or the heuristic bot), restricted to moves that obey a rule
@@ -333,6 +340,10 @@ impl RulePlayer {
     pub fn new(rule: &str, net: Arc<Net>) -> Self {
         RulePlayer { rule: rule.to_string(), base: Base::Net(NetPlayer::new(net)), decisions: 0, changed: 0 }
     }
+    /// The 2-ply player restricted by a rule.
+    pub fn for_search(rule: &str, net: Arc<Net>) -> Self {
+        RulePlayer { rule: rule.to_string(), base: Base::Search(Searcher::new(net, 5, 0.2)), decisions: 0, changed: 0 }
+    }
     /// The heuristic bot restricted by a rule (for testing rules on a weaker player).
     pub fn for_heuristic(rule: &str) -> Self {
         RulePlayer { rule: rule.to_string(), base: Base::Heuristic, decisions: 0, changed: 0 }
@@ -341,12 +352,14 @@ impl RulePlayer {
         match &mut self.base {
             Base::Net(n) => n.choose(s, moves, rng),
             Base::Heuristic => HeuristicPlayer.choose(s, moves, rng),
+            Base::Search(se) => se.choose2(moves).0,
         }
     }
     fn value(&mut self, m: &Move) -> f32 {
         match &mut self.base {
             Base::Net(n) => if m.outcome > 0 { 10.0 * m.outcome as f32 } else { n.move_value(m) },
             Base::Heuristic => if m.outcome > 0 { 1000.0 * m.outcome as f32 } else { HeuristicPlayer::evaluate(&m.after) },
+            Base::Search(se) => if m.outcome > 0 { 10.0 * m.outcome as f32 } else { equity(se.out1(m)) },
         }
     }
 }
@@ -364,6 +377,11 @@ impl Player for RulePlayer {
             return free;
         }
         self.changed += 1;
+        if let Base::Search(se) = &mut self.base {
+            // 2-ply choice among the rule-obeying moves (filtered at 1-ply like any 2-ply decision)
+            let sub: Vec<Move> = allowed.iter().map(|&i| moves[i]).collect();
+            return allowed[se.choose2(&sub).0];
+        }
         let mut best = (f32::NEG_INFINITY, allowed[0]);
         for &i in &allowed {
             let v = self.value(&moves[i]);
