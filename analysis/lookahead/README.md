@@ -14,6 +14,34 @@ The guide's bot picks moves at 1-ply: it plays each legal move and asks the netw
 | Guide example positions (§7, §11) | Same best move at 2-ply in all ten. | `examples_2ply.txt` |
 | Rules of thumb, with look-ahead on both sides (1,500 games each, ±0.08) | Never leave a 6+-shot blot: −0.33 (1-ply: −0.34). While pinned, don't bring checkers home: −0.30 (1-ply: −0.32). Never add to your 1–2 points: −0.25 (1-ply: −0.29). The guide's conclusions stand. The cheap rules (costs of 0.02–0.05) would need far more games than 2-ply allows. | `rules_2ply.txt` |
 
+## 3-ply, pruning and speed
+
+**Faster evaluator.** Most of the 253 inputs are zero for any position, so the first layer is now stored transposed and only the columns of non-zero inputs are added up (`Net::prepare` in `nn.rs`; the browser engine does the same). Outputs are identical to the last printed digit, and everything runs about 8 times faster: 1-ply games went from about 130 to about 1,000 per second, and 2-ply-vs-2-ply games from about 1.5 to 12 per second (4 cores). Training is unchanged; it uses the plain layout.
+
+**How much the move filter costs** (`filtercheck.txt`, 6,365 decisions from 400 self-play games; every legal move evaluated at 2-ply to find the unfiltered choice):
+
+| Filter | Choice differs from searching every move | Average 2-ply loss per decision | Moves searched per decision |
+|---|---|---|---|
+| none (1-ply only) | 22.7% | 0.0034 | 0 |
+| keep 2 within 0.06 | 10.9% | 0.0013 | 1.4 |
+| keep 3 within 0.12 | 6.0% | 0.0005 | 2.4 |
+| **keep 5 within 0.2 (used)** | **2.9%** | **0.0003** | **3.9** |
+| keep 8 within 0.3 | 1.5% | 0.0001 | 5.8 |
+
+The filter in use loses about 0.0003 points per decision, roughly 0.015 per game, for a 5-6x saving. Tighter filters save little time and lose more.
+
+**3-ply.** One more roll: the opponent's 21 rolls, each answered with the opponent's best reply chosen at 2-ply among its 1-ply top 3 within 0.12 (a reply that is the only survivor keeps its 1-ply value, which saves time). A 3-ply decision runs the 1-ply filter, evaluates the survivors at 2-ply, and searches the best 3 within 0.1 at 3-ply. Player `ply3:<net>`; columns `--ply3 1` in `compare` and `verify`.
+
+| Question | Result | File |
+|---|---|---|
+| Is 3-ply stronger than 2-ply? | Yes: **+0.071 ± 0.047** per game over 4,000 games, about as big a step as 1-ply to 2-ply. | `bench_ply3_vs_ply2.txt` |
+| Closer to the playouts? | On the 400 playout-checked decisions: right in 269 / 272 / 276 of the 291 clear cases at 1 / 2 / 3-ply; average error comparing two moves 0.139 / 0.099 / 0.087 points. (The playouts themselves were played at 1-ply.) | `verify_*_3ply.tsv` |
+| Openings | 20 of 21 rolls match Palamedes, as at 2-ply. | `opening_3ply_best.tsv` |
+| Guide example positions | Same best move at 1, 2 and 3-ply in all ten. | `examples_3ply.txt` |
+| Speed | About 25 ms per move evaluated at 3-ply in Rust; in the browser a 3-ply decision takes a median 0.4 s and up to about 5 s. | |
+
+**Self-play statistics with the 2-ply bot** (`selfplay_stats_2ply.txt`, 10,000 games) match the 1-ply ones the guide uses: pins on the 2-, 3- and 4-point win 90%, 79% and 68% (1-ply: 93%, 81%, 69%), double wins 43.5% (42.8%), and the start is emptied by turn 13 (13). The 2-ply bot leaves slightly riskier blots in the middle game, which supports the guide's "calculated risk" point.
+
 ## Teaching the look-ahead to the network (distillation): no gain
 
 We generated about 600,000 positions from self-play (half of them positions after alternative moves, so the net also sees the positions it has to compare), labelled each with its 2-ply value, and trained the net toward those labels (`mahbusa-rs gen2`, `mahbusa-rs fit`).
