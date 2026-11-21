@@ -15,6 +15,11 @@ pub struct Net {
     pub w2: Vec<f32>, // 3 x n_hid
     pub b2: Vec<f32>,
     pub games_trained: u64,
+    /// Transposed copy of w1 (n_in x n_hid) for fast inference; empty unless built by
+    /// `load_infer`/`prepare`. Most inputs are zero, so the forward pass then only touches the
+    /// columns of the non-zero inputs. Training uses (and changes) w1 only, so a net that is
+    /// trained must not be prepared (`train` panics if it is).
+    pub w1t: Vec<f32>,
 }
 
 #[inline]
@@ -41,7 +46,7 @@ impl Net {
         let b1 = (0..n_hid).map(|_| r(0.1)).collect();
         let w2 = (0..3 * n_hid).map(|_| r(0.1)).collect();
         let b2 = vec![0.0; 3];
-        Net { n_in, n_hid, w1, b1, w2, b2, games_trained: 0 }
+        Net { n_in, n_hid, w1, b1, w2, b2, games_trained: 0, w1t: Vec::new() }
     }
 
     /// A wider copy: `extra` new hidden units with small random input weights and zero output
@@ -58,13 +63,28 @@ impl Net {
             w2.extend_from_slice(&self.w2[k * n_old..(k + 1) * n_old]);
             w2.extend(std::iter::repeat(0.0).take(extra));
         }
-        Net { n_in, n_hid, w1, b1, w2, b2: self.b2.clone(), games_trained: self.games_trained }
+        Net { n_in, n_hid, w1, b1, w2, b2: self.b2.clone(), games_trained: self.games_trained, w1t: Vec::new() }
     }
 
     /// Forward pass on already-encoded inputs in sc.x; fills sc.h, returns outputs.
     #[inline]
     pub fn forward(&self, sc: &mut Scratch) -> [f32; 3] {
         let n_in = self.n_in;
+        if !self.w1t.is_empty() {
+            let n_hid = self.n_hid;
+            sc.h.copy_from_slice(&self.b1);
+            for (i, &x) in sc.x.iter().enumerate() {
+                if x != 0.0 {
+                    let col = &self.w1t[i * n_hid..(i + 1) * n_hid];
+                    for (h, w) in sc.h.iter_mut().zip(col.iter()) {
+                        *h += w * x;
+                    }
+                }
+            }
+            for h in sc.h.iter_mut() {
+                *h = sigmoid(*h);
+            }
+        } else {
         for j in 0..self.n_hid {
             let row = &self.w1[j * n_in..(j + 1) * n_in];
             let mut acc = self.b1[j];
@@ -72,6 +92,7 @@ impl Net {
                 acc += w * x;
             }
             sc.h[j] = sigmoid(acc);
+        }
         }
         let mut out = [0f32; 3];
         for k in 0..3 {
@@ -93,6 +114,7 @@ impl Net {
     /// One gradient step moving the outputs for the inputs in sc.x toward `target`
     /// (squared error). `sc` must hold the forward pass for these inputs.
     pub fn train(&mut self, sc: &mut Scratch, out: [f32; 3], target: [f32; 3], alpha: f32) {
+        assert!(self.w1t.is_empty(), "train() on a net prepared for inference");
         let n_in = self.n_in;
         let n_hid = self.n_hid;
         let mut delta_o = [0f32; 3];
@@ -123,6 +145,25 @@ impl Net {
         for k in 0..3 {
             self.b2[k] += alpha * delta_o[k];
         }
+    }
+
+    /// Load a net for playing and analysis (with the fast transposed first layer).
+    pub fn load_infer(path: &str) -> std::io::Result<Self> {
+        let mut n = Self::load(path)?;
+        n.prepare();
+        Ok(n)
+    }
+
+    /// Build the transposed first layer used by the fast forward pass.
+    pub fn prepare(&mut self) {
+        let (n_in, n_hid) = (self.n_in, self.n_hid);
+        let mut t = vec![0f32; n_in * n_hid];
+        for j in 0..n_hid {
+            for i in 0..n_in {
+                t[i * n_hid + j] = self.w1[j * n_in + i];
+            }
+        }
+        self.w1t = t;
     }
 
     pub fn save(&self, path: &str) -> std::io::Result<()> {
@@ -158,7 +199,7 @@ impl Net {
         let b1 = take(n_hid);
         let w2 = take(3 * n_hid);
         let b2 = take(3);
-        Ok(Net { n_in, n_hid, w1, b1, w2, b2, games_trained: games })
+        Ok(Net { n_in, n_hid, w1, b1, w2, b2, games_trained: games, w1t: Vec::new() })
     }
 }
 

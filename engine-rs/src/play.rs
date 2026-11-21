@@ -194,10 +194,12 @@ impl Tally {
 /// 2-ply player: 1-ply ranking, move filter, then 2-ply value for the survivors.
 pub struct SearchPlayer {
     pub s: Searcher,
+    /// 2 or 3
+    pub depth: u8,
 }
 impl Player for SearchPlayer {
     fn choose(&mut self, _s: &State, moves: &[Move], _rng: &mut Rng) -> usize {
-        self.s.choose2(moves).0
+        if self.depth >= 3 { self.s.choose3(moves, 3, 0.1).0 } else { self.s.choose2(moves).0 }
     }
 }
 
@@ -209,8 +211,13 @@ pub fn make_player(spec: &str) -> Box<dyn Player + Send> {
             (3, Some(k)) => (k, parts[1].parse::<f32>().expect("margin"), parts[2]),
             _ => (5, 0.2, rest),
         };
-        let net = Arc::new(Net::load(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
-        return Box::new(SearchPlayer { s: Searcher::new(net, keep, margin) });
+        let net = Arc::new(Net::load_infer(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
+        return Box::new(SearchPlayer { s: Searcher::new(net, keep, margin), depth: 2 });
+    }
+    if let Some(path) = spec.strip_prefix("ply3:") {
+        // ply3:<net>: 1-ply filter (5 within 0.2), 2-ply for those, 3-ply for the best 3 within 0.1
+        let net = Arc::new(Net::load_infer(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
+        return Box::new(SearchPlayer { s: Searcher::new(net, 5, 0.2), depth: 3 });
     }
     if let Some(rule) = spec.strip_prefix("hrule:") {
         // hrule:<name>: the heuristic bot restricted to rule-obeying moves
@@ -219,20 +226,20 @@ pub fn make_player(spec: &str) -> Box<dyn Player + Send> {
     if let Some(rest) = spec.strip_prefix("rule2:") {
         // rule2:<name>:<net>: the 2-ply player restricted to rule-obeying moves
         let (rule, path) = rest.split_once(':').expect("rule2:<name>:<net>");
-        let net = Arc::new(Net::load(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
+        let net = Arc::new(Net::load_infer(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
         return Box::new(RulePlayer::for_search(rule, net));
     }
     if let Some(rest) = spec.strip_prefix("rule:") {
         // rule:<name>:<net path>
         let (rule, path) = rest.split_once(':').expect("rule:<name>:<net>");
-        let net = Arc::new(Net::load(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
+        let net = Arc::new(Net::load_infer(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
         return Box::new(RulePlayer::new(rule, net));
     }
     match spec {
         "random" => Box::new(RandomPlayer),
         "heuristic" => Box::new(HeuristicPlayer),
         path => {
-            let net = Arc::new(Net::load(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
+            let net = Arc::new(Net::load_infer(path).unwrap_or_else(|e| panic!("cannot load {}: {}", path, e)));
             Box::new(NetPlayer::new(net))
         }
     }

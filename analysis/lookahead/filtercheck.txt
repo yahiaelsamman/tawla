@@ -1,0 +1,8 @@
+6365 decisions (each with 2+ moves, no winning move), 400 games
+filter	differs_from_full_2ply%	avg_2ply_loss_per_decision	avg_moves_searched_at_2ply
+1-ply only	22.67	0.0034	0.00
+keep 2 within 0.06	10.90	0.0013	1.43
+keep 3 within 0.08	6.24	0.0007	2.11
+keep 3 within 0.12	6.03	0.0005	2.36
+keep 5 within 0.2	2.94	0.0003	3.86
+keep 8 within 0.3	1.45	0.0001	5.83

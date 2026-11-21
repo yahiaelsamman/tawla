@@ -167,7 +167,7 @@ fn top_candidates(net: &Net, s: &State, moves: &[Move], k: usize) -> Vec<(f32, M
 
 /// Opening analysis: for every first roll, roll out the top-k moves.
 fn cmd_opening(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 5000);
     let k: usize = get(m, "top", 3);
     let threads: usize = get(m, "threads", 4);
@@ -218,7 +218,7 @@ fn cmd_opening(m: &HashMap<String, String>) {
 /// printed equities are B's, so they are negative when the pin is good for A.
 /// `scripts/summarize_analysis.py` flips the sign to give the pinner's view.
 fn cmd_pinvalue(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 4000);
     let threads: usize = get(m, "threads", 4);
     let base = State::initial();
@@ -244,7 +244,7 @@ fn cmd_pinvalue(m: &HashMap<String, String>) {
 /// best move (by rollout of top-k, or 1-ply if --quick), list the best reply for each
 /// of the 21 reply rolls.
 fn cmd_replies(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 2000);
     let k: usize = get(m, "top", 3);
     let threads: usize = get(m, "threads", 4);
@@ -282,7 +282,7 @@ fn cmd_replies(m: &HashMap<String, String>) {
 /// Persistent move chooser for the Python front-end. stdin: "me;op;mpin;opin;d1;d2";
 /// stdout: "me|mpin|equity" of the chosen move ("pass" if none).
 fn cmd_choose(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let mut player = NetPlayer::new(net);
     let mut gen = MoveGen::default();
     let mut moves = Vec::new();
@@ -315,7 +315,7 @@ fn cmd_choose(m: &HashMap<String, String>) {
 
 /// Self-play statistics with the net on both sides (for the human guide).
 fn cmd_stats(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 10000);
     let threads: usize = get(m, "threads", 4);
     let per = (n + threads as u64 - 1) / threads as u64;
@@ -323,8 +323,10 @@ fn cmd_stats(m: &HashMap<String, String>) {
     type Acc = (Vec<[f64; 5]>, Vec<f64>, Vec<[f64; 3]>, [f64; 4]);
     let handles: Vec<_> = (0..threads).map(|t| {
         let net = net.clone();
+        let spec = m.get("player").cloned();
         std::thread::spawn(move || -> Acc {
-            let mut pl = NetPlayer::new(net);
+            // --player <spec> (e.g. ply2:nets/td-best.net) replaces the 1-ply net player
+            let mut pl: Box<dyn Player + Send> = match &spec { Some(sp) => play::make_player(sp), None => Box::new(NetPlayer::new(net)) };
             let mut rng = Rng::new(4242 + t as u64);
             let mut gen = MoveGen::default();
             let mut moves = Vec::new();
@@ -348,7 +350,7 @@ fn cmd_stats(m: &HashMap<String, String>) {
                     let (d1, d2) = (rng.die(), rng.die());
                     gen.legal_moves(&s, d1, d2, &mut moves);
                     let after = if moves.is_empty() { s } else {
-                        let i = if moves.len() == 1 { 0 } else { pl.choose(&s, &moves, &mut rng) };
+                        let i = if moves.len() == 1 { 0 } else { pl.as_mut().choose(&s, &moves, &mut rng) };
                         let mv = moves[i];
                         if mv.outcome > 0 {
                             winner = cur; points = mv.outcome; mother = mv.after.me[0] < 15;
@@ -431,7 +433,7 @@ fn cmd_stats(m: &HashMap<String, String>) {
 /// Instructive positions: net self-play; record decisions where the heuristic's move
 /// is much worse (by net 1-ply equity) than the net's best move.
 fn cmd_quiz(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 300);
     let thr: f32 = get(m, "threshold", 0.25);
     let seed: u64 = get(m, "seed", 5);
@@ -468,7 +470,7 @@ fn cmd_quiz(m: &HashMap<String, String>) {
 
 /// Roll out specific moves from a position: --pos "me;op;mpin;opin" --dice 31
 fn cmd_compare(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 2000);
     let threads: usize = get(m, "threads", 4);
     let f: Vec<&str> = m.get("pos").expect("--pos").split(';').collect();
@@ -481,9 +483,11 @@ fn cmd_compare(m: &HashMap<String, String>) {
     let k: usize = get(m, "top", 4);
     // --ply2 1 adds the 2-ply equity; --games 0 skips the playouts
     let ply2: bool = get(m, "ply2", 0u8) == 1;
+    let ply3: bool = get(m, "ply3", 0u8) == 1; // --ply3 1 adds the 3-ply equity (inner filter: keep 3 within 0.12)
     let mut searcher = search::Searcher::new(net.clone(), 1, 0.0);
     for (v, mv) in top_candidates(&net, &s, &moves, k) {
-        let extra = if ply2 { format!("\tply2 {:+.3}", equity(searcher.out2(&mv))) } else { String::new() };
+        let mut extra = if ply2 { format!("\tply2 {:+.3}", equity(searcher.out2(&mv))) } else { String::new() };
+        if ply3 { extra.push_str(&format!("\tply3 {:+.3}", equity(searcher.out3(&mv, 3, 0.12)))); }
         if n == 0 { println!("{}\tnet {:+.3}{}", mv.notation(), v, extra); continue; }
         let (e, se, _) = if mv.outcome > 0 { (mv.outcome as f64, 0.0, Tally::new()) } else { rollout(&net, mv.after.flip(), n, 9, threads) };
         println!("{}\tnet {:+.3}\trollout {:+.3} ±{:.3}{}", mv.notation(), v, e, se, extra);
@@ -497,19 +501,20 @@ fn cmd_compare(m: &HashMap<String, String>) {
 /// Output: label, move A, move B, 1-ply values, playout equities and standard errors
 /// (A = keep / net's move, B = lift / heuristic's move; equities are for the player who moves).
 fn cmd_verify(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 1000);
     let threads: usize = get(m, "threads", 4);
     let offset: u64 = get(m, "offset", 0); // added to the case number when choosing playout seeds
     // --ply2 1: also print the 2-ply equity of both moves (columns ply2A, ply2B); --games 0 skips playouts.
     let ply2: bool = get(m, "ply2", 0u8) == 1;
     let mut searcher = search::Searcher::new(net.clone(), 1, 0.0);
+    let ply3: bool = get(m, "ply3", 0u8) == 1; // --ply3 1 also prints the 3-ply equities (ply3A, ply3B)
     let mut pl = NetPlayer::new(net.clone());
     let mut heur = play::HeuristicPlayer;
     let mut rng = Rng::new(1);
     let mut gen = MoveGen::default();
     let mut moves = Vec::new();
-    println!("label\tmode\tmoveA\tmoveB\tnetA\tnetB\trollA\tseA\trollB\tseB{}", if ply2 { "\tply2A\tply2B" } else { "" });
+    println!("label\tmode\tmoveA\tmoveB\tnetA\tnetB\trollA\tseA\trollB\tseB{}", format!("{}{}", if ply2 { "\tply2A\tply2B" } else { "" }, if ply3 { "\tply3A\tply3B" } else { "" }));
     let stdin = std::io::stdin();
     for (k, line) in stdin.lock().lines().enumerate() {
         let line = line.unwrap();
@@ -545,10 +550,14 @@ fn cmd_verify(m: &HashMap<String, String>) {
             let (rb, sb, _) = rollout(&net, moves[b].after.flip(), n, 12346 + 2 * (k as u64 + offset), threads);
             (ra, sa, rb, sb)
         };
-        let extra = if ply2 {
+        let mut extra = if ply2 {
             let (pa, pb) = (nn::equity(searcher.out2(&moves[a])), nn::equity(searcher.out2(&moves[b])));
             format!("\t{:+.3}\t{:+.3}", pa, pb)
         } else { String::new() };
+        if ply3 {
+            let (pa, pb) = (nn::equity(searcher.out3(&moves[a], 3, 0.12)), nn::equity(searcher.out3(&moves[b], 3, 0.12)));
+            extra.push_str(&format!("\t{:+.3}\t{:+.3}", pa, pb));
+        }
         // rollout() reports the player who just moved (the mover here), so these are the mover's equities.
         println!("{}\t{}\t{}\t{}\t{:+.3}\t{:+.3}\t{:+.3}\t{:.3}\t{:+.3}\t{:.3}{}", f[0], f[3], moves[a].notation(), moves[b].notation(), va, vb, ra, sa, rb, sb, extra);
         std::io::stdout().flush().unwrap();
@@ -562,7 +571,7 @@ fn cmd_verify(m: &HashMap<String, String>) {
 /// with the outputs for the player on roll in that position.
 fn cmd_gen2(m: &HashMap<String, String>) {
     use std::sync::Mutex;
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 1000);
     let p: f64 = get(m, "sample", 0.25);
     let threads: usize = get(m, "threads", 4);
@@ -666,13 +675,77 @@ fn cmd_fit(m: &HashMap<String, String>) {
     net.save(&out).unwrap();
 }
 
+/// How much accuracy the 2-ply move filter gives up. On decisions sampled from 1-ply self-play,
+/// every legal move is evaluated at 2-ply; then each filter setting (keep, margin) picks its move
+/// by 2-ply among the moves it keeps. Reports how often that differs from the unfiltered 2-ply
+/// choice, the average 2-ply loss per decision, and how many moves each setting searches.
+fn cmd_filtercheck(m: &HashMap<String, String>) {
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
+    let n: u64 = get(m, "games", 200);
+    let p: f64 = get(m, "sample", 0.2);
+    let threads: usize = get(m, "threads", 4);
+    let cfgs: Vec<(usize, f32)> = vec![(1, 0.0), (2, 0.06), (3, 0.08), (3, 0.12), (5, 0.2), (8, 0.3)];
+    let per = (n + threads as u64 - 1) / threads as u64;
+    let handles: Vec<_> = (0..threads).map(|t| {
+        let (net, cfgs) = (net.clone(), cfgs.clone());
+        std::thread::spawn(move || {
+            let mut pl = NetPlayer::new(net.clone());
+            let mut se = search::Searcher::new(net, 1, 0.0);
+            let mut rng = Rng::new(31337 + t as u64);
+            let mut gen = MoveGen::default();
+            let mut moves = Vec::new();
+            // per config: [decisions differing, total loss, total moves searched]; plus decision count
+            let mut acc = vec![[0f64; 3]; cfgs.len()];
+            let mut count = 0f64;
+            for _ in 0..per {
+                let mut s = State::initial();
+                for _ in 0..3000u32 {
+                    let (d1, d2) = (rng.die(), rng.die());
+                    gen.legal_moves(&s, d1, d2, &mut moves);
+                    if moves.is_empty() { s = s.flip(); continue; }
+                    if moves.len() > 1 && moves.iter().all(|x| x.outcome == 0) && (rng.below(1_000_000) as f64) < p * 1e6 {
+                        let one: Vec<f32> = moves.iter().map(|x| equity(se.out1(x))).collect();
+                        let two: Vec<f32> = moves.iter().map(|x| equity(se.out2(x))).collect();
+                        let best2 = two.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+                        let full = (0..moves.len()).max_by(|&a, &b| two[a].partial_cmp(&two[b]).unwrap()).unwrap();
+                        let mut order: Vec<usize> = (0..moves.len()).collect();
+                        order.sort_by(|&a, &b| one[b].partial_cmp(&one[a]).unwrap());
+                        for (c, &(keep, margin)) in cfgs.iter().enumerate() {
+                            let kept: Vec<usize> = order.iter().enumerate().filter(|(r, &i)| *r < keep.max(1) && one[order[0]] - one[i] <= margin).map(|(_, &i)| i).collect();
+                            let pick = *kept.iter().max_by(|&&a, &&b| two[a].partial_cmp(&two[b]).unwrap()).unwrap();
+                            if pick != full { acc[c][0] += 1.0; }
+                            acc[c][1] += (best2 - two[pick]) as f64;
+                            acc[c][2] += if kept.len() > 1 { kept.len() as f64 } else { 0.0 };
+                        }
+                        count += 1.0;
+                    }
+                    let i = if moves.len() == 1 { 0 } else { pl.choose(&s, &moves, &mut rng) };
+                    let mv = moves[i];
+                    if mv.outcome > 0 { break; }
+                    s = mv.after.flip();
+                }
+            }
+            (acc, count)
+        })
+    }).collect();
+    let mut acc = vec![[0f64; 3]; cfgs.len()];
+    let mut count = 0f64;
+    for h in handles { let (a, c) = h.join().unwrap(); for i in 0..cfgs.len() { for j in 0..3 { acc[i][j] += a[i][j]; } } count += c; }
+    println!("{} decisions (each with 2+ moves, no winning move), {} games", count, n);
+    println!("filter\tdiffers_from_full_2ply%\tavg_2ply_loss_per_decision\tavg_moves_searched_at_2ply");
+    for (c, &(keep, margin)) in cfgs.iter().enumerate() {
+        let label = if keep == 1 { "1-ply only".to_string() } else { format!("keep {} within {}", keep, margin) };
+        println!("{}\t{:.2}\t{:.4}\t{:.2}", label, 100.0 * acc[c][0] / count, acc[c][1] / count, acc[c][2] / count);
+    }
+}
+
 
 /// Release and defence statistics from net self-play.
 /// Releases of home-board pins (pinner's point 1..6): voluntary vs forced, by the
 /// pinner's checkers left on the board. Deep-pinned players (own checker pinned on
 /// own point >= 19): win rate with vs without a counter-pin of their own.
 fn cmd_releases(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 5000);
     let threads: usize = get(m, "threads", 4);
     let per = (n + threads as u64 - 1) / threads as u64;
@@ -754,7 +827,7 @@ fn cmd_releases(m: &HashMap<String, String>) {
 /// Pin-lifting decisions: every position (net self-play) where the mover holds a pin in
 /// its home board (points 1..6) and has both a move that keeps it and one that lifts it.
 fn cmd_liftdata(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 4000);
     let threads: usize = get(m, "threads", 4);
     let per = (n + threads as u64 - 1) / threads as u64;
@@ -814,7 +887,7 @@ fn cmd_liftdata(m: &HashMap<String, String>) {
 /// Roll out a list of positions. stdin lines: "label<TAB>me;op;mpin;opin" with the
 /// player to move = me. Prints the equity for the player ON ROLL plus outcome rates.
 fn cmd_evalset(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 3000);
     let threads: usize = get(m, "threads", 4);
     println!("label\tequity_on_roll\tse\twin%\twin_double%\tlose_double%\tnet_1ply");
@@ -839,7 +912,7 @@ fn cmd_evalset(m: &HashMap<String, String>) {
 /// How often the Egyptian mother rule decides games differently from Greek Plakoto:
 /// mother-pin endings in which the pinner still had checkers on its own start.
 fn cmd_motherstats(m: &HashMap<String, String>) {
-    let net = Arc::new(Net::load(m.get("net").expect("--net required")).unwrap());
+    let net = Arc::new(Net::load_infer(m.get("net").expect("--net required")).unwrap());
     let n: u64 = get(m, "games", 20000);
     let mut pl = NetPlayer::new(net);
     let mut rng = Rng::new(555);
@@ -909,6 +982,7 @@ fn main() {
         "verify" => cmd_verify(&m),
         "gen2" => cmd_gen2(&m),
         "fit" => cmd_fit(&m),
+        "filtercheck" => cmd_filtercheck(&m),
         "replies" => cmd_replies(&m),
         _ => eprintln!(
             "usage: mahbusa-rs <command> [--key value ...]\n\
@@ -928,6 +1002,7 @@ fn main() {
              \x20 verify       check one-move judgements against playouts (stdin cases)\n\
              \x20 gen2         self-play positions labelled with their 2-ply value (distillation data)\n\
              \x20 fit          train a net toward labelled values (--net --data --epochs --alpha --out)\n\
+             \x20 filtercheck  how much accuracy the 2-ply move filter gives up\n\
              \x20 motherstats  how often Egyptian and Greek mother rules decide a game differently\n\
              \x20 choose       persistent move chooser used by the Python front-end\n\
              \x20 speed        random-play speed check"
