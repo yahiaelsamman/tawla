@@ -209,20 +209,26 @@
       return a;
     };
     const w1 = take(nHid * nIn), b1 = take(nHid), w2 = take(3 * nHid), b2 = take(3);
-    return { nIn, nHid, games, w1, b1, w2, b2, x: new Float64Array(nIn), h: new Float64Array(nHid) };
+    // Transposed first layer: most inputs are zero, so evaluate() adds only the columns of the
+    // non-zero inputs, reading each column contiguously (same idea as Net::prepare in nn.rs).
+    const w1t = new Float32Array(nIn * nHid);
+    for (let j = 0; j < nHid; j++) for (let i = 0; i < nIn; i++) w1t[i * nHid + j] = w1[j * nIn + i];
+    return { nIn, nHid, games, w1, w1t, b1, w2, b2, x: new Float64Array(nIn), h: new Float64Array(nHid) };
   }
   const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 
   /** [W, WD, LD] for the player to move in s. */
   function evaluate(net, s) {
-    const { nIn, nHid, w1, b1, w2, b2, x, h } = net;
+    const { nIn, nHid, w1t, b1, w2, b2, x, h } = net;
     encode(s, x);
-    for (let j = 0; j < nHid; j++) {
-      let acc = b1[j];
-      const o = j * nIn;
-      for (let i = 0; i < nIn; i++) if (x[i] !== 0) acc += w1[o + i] * x[i];
-      h[j] = sigmoid(acc);
+    for (let j = 0; j < nHid; j++) h[j] = b1[j];
+    for (let i = 0; i < nIn; i++) {
+      const xi = x[i];
+      if (xi === 0) continue;
+      const o = i * nHid;
+      for (let j = 0; j < nHid; j++) h[j] += w1t[o + j] * xi;
     }
+    for (let j = 0; j < nHid; j++) h[j] = sigmoid(h[j]);
     const out = [0, 0, 0];
     for (let k = 0; k < 3; k++) {
       let acc = b2[k];
@@ -285,6 +291,59 @@
     return top.concat(r.slice(n));
   }
 
+  // ---------------------------------------------------------------- 3-ply (port of search.rs eval3/choose3)
+  /** Moves surviving the 1-ply filter: top `keep` within `margin` of the best, best first. */
+  function filterMoves(net, moves, keep, margin) {
+    const r = rankMoves(net, moves);
+    const key = (x) => (x.move.outcome > 0 ? 10 * x.move.outcome : x.value);
+    const top = key(r[0]);
+    return r.filter((x, i) => i < Math.max(1, keep) && top - key(x) <= margin);
+  }
+  /** Outputs of the best move for the player to move: depth 2 among the filtered moves
+   *  (a single survivor keeps its 1-ply outputs, as in search.rs best_outputs). */
+  function bestOutputs2(net, moves, keep, margin) {
+    const win = moves.filter((m) => m.outcome > 0).sort((a, b) => b.outcome - a.outcome)[0];
+    if (win) return [1, win.outcome >= 2 ? 1 : 0, 0];
+    const c = filterMoves(net, moves, keep, margin);
+    if (c.length === 1) return moveOutputs(net, c[0].move);
+    let best = -Infinity, out = null;
+    for (const x of c) {
+      const o = invert(evaluate2(net, flip(x.move.after)));
+      const e = equity(o);
+      if (e > best) { best = e; out = o; }
+    }
+    return out;
+  }
+  /** 3-ply outputs for the player on roll. */
+  function evaluate3(net, s, keep3 = 3, margin3 = 0.12) {
+    const acc = [0, 0, 0];
+    for (const [d1, d2, w] of ROLLS) {
+      const moves = legalMoves(s, d1, d2);
+      const o = moves.length ? bestOutputs2(net, moves, keep3, margin3) : invert(evaluate2(net, flip(s)));
+      for (let k = 0; k < 3; k++) acc[k] += w * o[k];
+    }
+    return acc.map((x) => x / 36);
+  }
+  /** 3-ply equity of a move for the mover. */
+  function moveValue3(net, m) {
+    return m.outcome > 0 ? m.outcome : equity(invert(evaluate3(net, flip(m.after))));
+  }
+  /** Rank for a 3-ply decision (as search.rs choose3): 1-ply filter (5 within 0.2), 2-ply for those,
+   *  3-ply for the best 3 within 0.1 at 2-ply. Entries carry `depth`, the level their value comes from. */
+  function rankMoves3(net, moves) {
+    const r = rankMoves(net, moves).map((x) => ({ ...x, depth: 1 }));
+    if (!r.length || r[0].move.outcome > 0) return r;
+    const n = filterMoves(net, moves, 5, 0.2).length;
+    if (n < 2) return r;
+    const two = r.slice(0, n).map((x) => ({ move: x.move, value: moveValue2(net, x.move), value1: x.value, depth: 2 }));
+    two.sort((a, b) => b.value - a.value);
+    const f = two.filter((x, i) => i < 3 && two[0].value - x.value <= 0.1).length;
+    if (f < 2) return two.concat(r.slice(n));
+    const three = two.slice(0, f).map((x) => ({ ...x, value: moveValue3(net, x.move), depth: 3 }));
+    three.sort((a, b) => b.value - a.value);
+    return three.concat(two.slice(f), r.slice(n));
+  }
+
   function b64ToBytes(b64) {
     if (typeof atob === "function") {
       const bin = atob(b64);
@@ -298,7 +357,7 @@
   const api = {
     START, N, initial, flip, step, legalPaths, legalMoves, notation, pips, keyOf,
     myPinnedAt, iPinAt, pinShots, encode, N_INPUTS, loadNet, evaluate, equity, moveValue, rankMoves, b64ToBytes,
-    evaluate2, moveValue2, rankMoves2,
+    evaluate2, moveValue2, rankMoves2, evaluate3, moveValue3, rankMoves3,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Mahbusa = api;

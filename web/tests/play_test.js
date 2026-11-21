@@ -8,6 +8,7 @@ const { chromium } = require("playwright");
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   await page.goto("file://" + require("path").resolve(__dirname, "../index.html"));
   await page.waitForTimeout(500);
+  if (process.env.BOT_LEVEL) await page.selectOption("#botLevel", process.env.BOT_LEVEL);
   await page.screenshot({ path: process.argv[2] + "/start.png" });
   let games = 0, turns = 0;
   const t0 = Date.now();

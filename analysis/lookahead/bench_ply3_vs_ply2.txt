@@ -1,0 +1,1 @@
+4000 games  ply3:nets/td-best.net vs ply2:nets/td-best.net: win 52.1% ±1.5  ppg +0.071 ±0.047  doubles 22.7%/19.8%  mother-pin 4.5%  avg turns 93.4

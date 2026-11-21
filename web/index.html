@@ -135,7 +135,7 @@ details ul { padding-inline-start: 1.1em; margin: 6px 0 0; display: grid; gap: 4
       <div class="opts">
         <label>Match to <select id="matchLen"><option>1</option><option selected>3</option><option>5</option><option>7</option></select></label>
         <label><input type="checkbox" id="coachOn" checked> Coach</label>
-        <label>Bot <select id="botLevel"><option value="2" selected>2-ply (looks ahead)</option><option value="1">1-ply (faster)</option></select></label>
+        <label>Bot <select id="botLevel"><option value="3">3-ply (strongest, can take a few seconds)</option><option value="2" selected>2-ply (looks ahead)</option><option value="1">1-ply (fastest)</option></select></label>
         <button id="newBtn" type="button" class="ghost">New match</button>
       </div>
       <details>
@@ -442,8 +442,8 @@ function humanRoll() {
 }
 
 // Bot level: 2-ply searches the best few 1-ply candidates one roll deeper (see engine.js rankMoves2).
-function lookAhead() { return $("botLevel").value === "2"; }
-function rank(moves) { return lookAhead() ? M.rankMoves2(NET, moves) : M.rankMoves(NET, moves); }
+function level() { return +$("botLevel").value; }
+function rank(moves) { const l = level(); return l === 3 ? M.rankMoves3(NET, moves) : l === 2 ? M.rankMoves2(NET, moves) : M.rankMoves(NET, moves); }
 
 function confirmMove() {
   const path = completePath();
@@ -452,9 +452,10 @@ function confirmMove() {
   const ranked = rank(M.legalMoves(before, dice[0], dice[1]));
   const key = M.keyOf(path.after);
   const mine = ranked.find((r) => M.keyOf(r.move.after) === key) || ranked[0];
-  // At 2-ply only the top candidates are searched; give the player's move a 2-ply value too.
-  if (lookAhead() && mine.value1 === undefined && !(mine.move.outcome > 0)) mine.value = M.moveValue2(NET, mine.move);
   const best = ranked[0];
+  // Only the top candidates are searched deeply; value the player's move at the same depth as the best.
+  const dep = (x) => x.depth || (x.value1 !== undefined ? 2 : 1);
+  if (!(mine.move.outcome > 0) && dep(mine) < dep(best)) mine.value = dep(best) === 3 ? M.moveValue3(NET, mine.move) : M.moveValue2(NET, mine.move);
   const loss = Math.max(0, best.value - mine.value);
   const note = M.notation(path.steps);
   const [cls, word] = loss <= 0.015 ? ["best", "Best move"] : loss <= 0.06 ? ["good", "Good"] : loss <= 0.15 ? ["inacc", "Inaccuracy"] : loss <= 0.4 ? ["mistake", "Mistake"] : ["blunder", "Blunder"];
