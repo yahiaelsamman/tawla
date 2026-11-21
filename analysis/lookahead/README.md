@@ -12,7 +12,7 @@ The guide's bot picks moves at 1-ply: it plays each legal move and asks the netw
 | Is 2-ply closer to the truth than 1-ply? | On the 400 decisions with 1,000-game playouts (`analysis/experiments/verify/`), the error in judging which of two moves is better drops from 0.139 to 0.099 points, and agreement on decidable cases rises from 269 to 272 of 291. | `verify_vs_2ply.txt` |
 | Opening book | 2-ply agrees with Palamedes on 20 of 21 first rolls (1-ply: 19). It now picks the book move for 2-2; the remaining difference, 5-5, was already settled for the book move by the guide's rollouts. | `opening_2ply_best.tsv` |
 | Guide example positions (§7, §11) | Same best move at 2-ply in all ten. | `examples_2ply.txt` |
-| Rules of thumb, with look-ahead on both sides (1,500 games each, ±0.08) | Never leave a 6+-shot blot: −0.33 (1-ply: −0.34). While pinned, don't bring checkers home: −0.30 (1-ply: −0.32). Never add to your 1–2 points: −0.25 (1-ply: −0.29). The guide's conclusions stand. The cheap rules (costs of 0.02–0.05) would need far more games than 2-ply allows. | `rules_2ply.txt` |
+| Rules of thumb, first check (1,500 games each, ±0.08) | Never leave a 6+-shot blot: −0.33 (1-ply: −0.34). While pinned, don't bring checkers home: −0.30 (1-ply: −0.32). Never add to your 1–2 points: −0.25 (1-ply: −0.29). | `rules_2ply.txt` |
 
 ## 3-ply, pruning and speed
 
@@ -39,6 +39,23 @@ The filter in use loses about 0.0003 points per decision, roughly 0.015 per game
 | Openings | 20 of 21 rolls match Palamedes, as at 2-ply. | `opening_3ply_best.tsv` |
 | Guide example positions | Same best move at 1, 2 and 3-ply in all ten. | `examples_3ply.txt` |
 | Speed | About 25 ms per move evaluated at 3-ply in Rust; in the browser a 3-ply decision takes a median 0.4 s and up to about 5 s. | |
+
+**Every rule of thumb at 2-ply** (both sides 2-ply, 10,000 games each, ±0.03; `rules_2ply_10k.txt`, made by `engine-rs/run_lookahead_long.sh`), next to the 1-ply costs in guide §12:
+
+| Rule | 1-ply | 2-ply |
+|---|---|---|
+| Never lift a home pin | −0.027 ± 0.009 | −0.039 |
+| Never lift except to trade a 5/6 pin for a deeper one | −0.022 ± 0.009 | −0.012 |
+| Never leave a single checker on your start | −0.019 ± 0.009 | −0.069 |
+| Always take a home pin | −0.045 ± 0.009 | −0.087 |
+| Always pin | −0.134 ± 0.009 | −0.173 |
+| Never leave a blot 6+ rolls can pin | −0.34 ± 0.03 | −0.390 |
+| Never leave a blot 12+ rolls can pin | −0.33 ± 0.03 | −0.327 |
+| Never add to your 1–2 points before the bear-off | −0.29 ± 0.03 | −0.266 |
+| While pinned, don't bring checkers home | −0.32 ± 0.03 | −0.323 |
+| Maximise points made | −0.85 ± 0.03 | −0.883 |
+
+Every rule keeps its place in the ranking and every conclusion in §12 stands. The cheap rules cost somewhat more against the stronger bot; two of them (a lone start checker, always taking a home pin) cross the guide's 0.05 line for a "safe habit", and the guide now says so.
 
 **Self-play statistics with the 2-ply bot** (`selfplay_stats_2ply.txt`, 10,000 games) match the 1-ply ones the guide uses: pins on the 2-, 3- and 4-point win 90%, 79% and 68% (1-ply: 93%, 81%, 69%), double wins 43.5% (42.8%), and the start is emptied by turn 13 (13). The 2-ply bot leaves slightly riskier blots in the middle game, which supports the guide's "calculated risk" point.
 

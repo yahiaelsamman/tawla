@@ -20,7 +20,7 @@ What's here:
 
 The rules come from Arabic and Greek sources (see `research/RESEARCH.md`). The bot is a small neural network that learned by playing itself, following the method of the Palamedes Plakoto program. It trained for 3 million games, but it stopped improving after 2 million, so the 2-million-game version is the one used for the guide. It beats a hand-written rule-based bot 81% of the time and agrees with Palamedes' published opening moves on 19 of 21 rolls.
 
-Most numbers in the guide come from setting up a position and letting the bot play it out thousands of times, or from making the bot follow a rule of thumb and seeing how much it loses. That play looks one move ahead. Adding a second level of look-ahead (2-ply: also considering every roll the opponent could get next) makes the bot about 0.06 points per game stronger, and spot checks with it agree with the guide (see `analysis/lookahead/`). The board in the browser plays at 2-ply. The bot is strong, not perfect. The weak spots are listed in `docs/METHODS.md`.
+Most numbers in the guide come from setting up a position and letting the bot play it out thousands of times, or from making the bot follow a rule of thumb and seeing how much it loses. That play looks one move ahead. Adding a second level of look-ahead (2-ply: also considering every roll the opponent could get next) makes the bot about 0.06 points per game stronger, and spot checks with it agree with the guide (see `analysis/lookahead/`). Looking one more roll ahead (3-ply) adds about the same again. The board in the browser plays at 2-ply by default and can play at 3-ply. The bot is strong, not perfect. The weak spots are listed in `docs/METHODS.md`.
 
 ## Rules
 

@@ -1,0 +1,20 @@
+10000 games  rule2:nolift:nets/td-best.net vs ply2:nets/td-best.net: win 48.9% ±1.0  ppg -0.039 ±0.030  doubles 20.5%/22.2%  mother-pin 4.2%  avg turns 93.1
+  nolift: the rule changed the 2-ply bot's move in 3786 of 403005 decisions (0.9%)
+10000 games  rule2:nolift_tradeup:nets/td-best.net vs ply2:nets/td-best.net: win 49.5% ±1.0  ppg -0.012 ±0.030  doubles 21.6%/21.7%  mother-pin 4.8%  avg turns 93.0
+  nolift_tradeup: the rule changed the 2-ply bot's move in 3148 of 403129 decisions (0.8%)
+10000 games  rule2:pairs:nets/td-best.net vs ply2:nets/td-best.net: win 47.6% ±1.0  ppg -0.069 ±0.030  doubles 21.1%/23.1%  mother-pin 3.4%  avg turns 93.8
+  pairs: the rule changed the 2-ply bot's move in 5583 of 404846 decisions (1.4%)
+10000 games  rule2:homepin:nets/td-best.net vs ply2:nets/td-best.net: win 47.3% ±1.0  ppg -0.087 ±0.030  doubles 20.1%/23.3%  mother-pin 5.0%  avg turns 93.2
+  homepin: the rule changed the 2-ply bot's move in 4237 of 401249 decisions (1.1%)
+10000 games  rule2:alwayspin:nets/td-best.net vs ply2:nets/td-best.net: win 44.9% ±1.0  ppg -0.173 ±0.030  doubles 19.4%/26.4%  mother-pin 7.4%  avg turns 92.0
+  alwayspin: the rule changed the 2-ply bot's move in 11575 of 394907 decisions (2.9%)
+10000 games  rule2:safe:nets/td-best.net vs ply2:nets/td-best.net: win 38.5% ±1.0  ppg -0.390 ±0.028  doubles 11.0%/27.0%  mother-pin 4.4%  avg turns 92.1
+  safe: the rule changed the 2-ply bot's move in 41422 of 399807 decisions (10.4%)
+10000 games  rule2:safe12:nets/td-best.net vs ply2:nets/td-best.net: win 40.8% ±1.0  ppg -0.327 ±0.028  doubles 13.1%/27.4%  mother-pin 4.6%  avg turns 92.1
+  safe12: the rule changed the 2-ply bot's move in 32316 of 398686 decisions (8.1%)
+10000 games  rule2:nobury2:nets/td-best.net vs ply2:nets/td-best.net: win 39.4% ±1.0  ppg -0.266 ±0.029  doubles 19.3%/24.6%  mother-pin 5.0%  avg turns 92.4
+  nobury2: the rule changed the 2-ply bot's move in 73592 of 403702 decisions (18.2%)
+10000 games  rule2:nocrash2:nets/td-best.net vs ply2:nets/td-best.net: win 40.2% ±1.0  ppg -0.323 ±0.030  doubles 17.3%/30.0%  mother-pin 5.7%  avg turns 91.4
+  nocrash2: the rule changed the 2-ply bot's move in 47326 of 395315 decisions (12.0%)
+10000 games  rule2:blocks:nets/td-best.net vs ply2:nets/td-best.net: win 23.4% ±0.8  ppg -0.883 ±0.025  doubles 6.3%/41.5%  mother-pin 6.4%  avg turns 91.5
+  blocks: the rule changed the 2-ply bot's move in 130025 of 387829 decisions (33.5%)
