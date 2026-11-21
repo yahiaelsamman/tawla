@@ -88,7 +88,7 @@ Reproducing the tables in the guide: see the "Repository map and reproduction" s
 | `docs/METHODS.md` | Methods, evidence, limitations |
 | `research/RESEARCH.md` | Rules, sources, existing strategy knowledge and computer analysis |
 | `src/mahbusa/`, `tests/` | Python engine, rule-based bot, terminal play; rule tests and a brute-force cross-check of move generation |
-| `engine-rs/` | Rust engine, trainer and analysis commands; the trained net is `nets/td-best.net` |
+| `engine-rs/` | Rust engine, trainer and analysis commands; the trained net is `nets/td-best.net`, and `nets/td.log` has its learning curve (one benchmark against the rule-based bot per checkpoint) |
 | `web/` | The browser board (engine port, net weights, coach) |
 | `analysis/` | Result files: `net2m/` (the 2M-game net, used by the guide), `net1m/` (an older net), `experiments/`, `pins/` |
 | `scripts/` | Shot table, quiz rendering, experiment builders, summaries |

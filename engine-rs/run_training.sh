@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Resumable TD(0) training. Each round trains a chunk and resumes from nets/td-latest.net,
-# so after a container restart just run this script again.
+# so if it gets interrupted just run this script again.
 #   0-1M games: alpha 0.1   1M-2M: alpha 0.03   2M+: alpha 0.01
 set -euo pipefail
 cd "$(dirname "$0")"

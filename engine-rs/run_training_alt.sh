@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Train a second, independent network (different seed, separate files) so findings can be
 # checked on a net that shares no training history with nets/td-best.net.
-# Resumable like run_training.sh: after a container restart just run it again.
+# Resumable like run_training.sh: if it gets interrupted just run it again.
 #   0-800k games: alpha 0.1   800k-TARGET: alpha 0.03
 # Output: nets/alt-latest.net, nets/alt-<N>k.net, nets/alt.log; the finished net is copied to nets/td-alt.net.
 set -euo pipefail
